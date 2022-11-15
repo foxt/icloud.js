@@ -1,5 +1,5 @@
 {
-  "name": "icloud.js",
+  "name": "icloudjs",
   "version": "1.0.0",
   "description": "Library for accessing iCloud in Node.js",
   "main": "bin/index.js",
