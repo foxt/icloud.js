@@ -13,7 +13,7 @@ This library would not be possible without the help of:
 
 ## Usage
 
-For more indepth usage details, check the (examples)(https://github.com/foxt/icloud.js/tree/main/test)
+For more indepth usage details, check the [examples](https://github.com/foxt/icloud.js/tree/master/test)
 
 ### Basic example
 
@@ -34,12 +34,4 @@ await icloud.awaitReady;
 console.log("Hello, " + icloud.accountInfo.dsInfo.fullName)
 return icloud
 ```
-
-## Donations
-
-If this library has helped you, consider donating to the author.
-
- - [Monzo (U.K. debit cards only)](https://monzo.me/leonesfield)
- - [PayPal](https://paypal.me/foxtdev)
- - [Patreon](https://www.patreon.com/thelmgn)
 
