@@ -1,0 +1,36 @@
+{
+  "name": "icloud.js",
+  "version": "1.0.0",
+  "description": "Library for accessing iCloud in Node.js",
+  "main": "bin/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/foxt/icloud.js.git"
+  },
+  "keywords": [
+    "icloud"
+  ],
+  "author": "foxt",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/foxt/icloud.js/issues"
+  },
+  "homepage": "https://github.com/foxt/icloud.js#readme",
+  "dependencies": {
+    "@types/node": "^18.6.4",
+    "@types/node-fetch": "^2.6.2",
+    "@types/tough-cookie": "^4.0.2",
+    "node-fetch": "^2.6.7",
+    "tough-cookie": "^4.0.0"
+  },
+  "optionalDependencies": {
+    "keytar": "^7.9.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.43.0",
+    "typedoc": "^0.23.21"
+  }
+}
