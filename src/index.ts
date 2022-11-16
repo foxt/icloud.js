@@ -82,37 +82,8 @@ export default class iCloudService extends EventEmitter {
 
     constructor(options: iCloudServiceSetupOptions) {
         super();
-        if (!options.username) {
-            try {
-                const saved = require("keytar").findCredentials("https://idmsa.apple.com")[0];
-                if (!saved) throw new Error("Username was not provided and could not be found in keychain");
-                options.username = saved.username;
-                console.debug("[icloud] Username found in keychain:", options.username);
-            } catch (e) {
-                throw new Error("Username was not provided, and unable to use Keytar to find saved credentials" + e.toString());
-            }
-        }
-        if (!options.password) {
-            try {
-                options.password = require("keytar").findPassword("https://idmsa.apple.com", options.username);
-            } catch (e) {
-                throw new Error("Password was not provided, and unable to use Keytar to find saved credentials" + e.toString());
-            }
-        }
-
-        if (!options.dataDirectory) options.dataDirectory = path.join(os.homedir(), ".icloud");
-        if (!options.username) throw new Error("Username is required");
-        if (!options.password) throw new Error("Password is required");
-
-        // hide password from console.log
-        Object.defineProperty(options, "password", {
-            enumerable: false, // hide it from for..in
-            value: options.password
-        });
-
-        if (!fs.existsSync(options.dataDirectory)) fs.mkdirSync(options.dataDirectory);
-
         this.options = options;
+        if (!this.options.dataDirectory) this.options.dataDirectory = path.join(os.homedir(), ".icloud");
         this.authStore = new iCloudAuthenticationStore(options);
     }
 
@@ -122,7 +93,40 @@ export default class iCloudService extends EventEmitter {
         this.emit(state, ...args);
     }
 
-    async authenticate() {
+    async authenticate(username?: string, password?: string) {
+        username = username || this.options.username;
+        password = password || this.options.password;
+        if (!username) {
+            try {
+                const saved = (await require("keytar").findCredentials("https://idmsa.apple.com"))[0];
+                if (!saved) throw new Error("Username was not provided and could not be found in keychain");
+                username = saved.account;
+                console.debug("[icloud] Username found in keychain:", username);
+            } catch (e) {
+                throw new Error("Username was not provided, and unable to use Keytar to find saved credentials" + e.toString());
+            }
+        }
+        this.options.username = username;
+        if (!password) {
+            try {
+                password = await require("keytar").findPassword("https://idmsa.apple.com", username);
+            } catch (e) {
+                throw new Error("Password was not provided, and unable to use Keytar to find saved credentials" + e.toString());
+            }
+        }
+        // hide password from console.log
+        Object.defineProperty(this.options, "password", {
+            enumerable: false, // hide it from for..in
+            value: password
+        });
+        if (!username) throw new Error("Username is required");
+        if (!password) throw new Error("Password is required");
+
+
+        if (!fs.existsSync(this.options.dataDirectory)) fs.mkdirSync(this.options.dataDirectory);
+
+
+
         this._setState(iCloudServiceStatus.Started);
         try {
             const authData = { accountName: this.options.username, password: this.options.password, trustTokens: [] };
@@ -142,6 +146,9 @@ export default class iCloudService extends EventEmitter {
                     throw new Error("Unable to process auth response!");
                 }
             } else {
+                if (authResponse.status == 401) {
+                    throw new Error("Recieved 401 error. Incorrect password?");
+                }
                 throw new Error("Invalid status code: " + authResponse.status);
             }
         } catch (e) {
