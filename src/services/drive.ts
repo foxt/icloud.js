@@ -142,4 +142,36 @@ export class iCloudDriveService {
         const fileResponse = await fetch(url, { headers: this.service.authStore.getHeaders() });
         return fileResponse.body;
     }
+    async mkdir(parent: {drivewsid: string } | string, name: string) {
+        const parentId = typeof parent === "string" ? parent : parent.drivewsid;
+        const response = await fetch(this.serviceUri + "/createFolders", {
+            headers: this.service.authStore.getHeaders(),
+            method: "POST",
+            body: JSON.stringify({
+                destinationDrivewsId: parentId,
+                folders: [{
+                    name, clientId: "auth-ab95dcd4-65db-11ed-a792-244bfee1e3c1"
+                }]
+            })
+        });
+        return response.json();
+    }
+    async del(item: {drivewsid: string, etag: string} | string, etag?: string) {
+        const drivewsid = typeof item === "string" ? item : item.drivewsid;
+        const itemEtag = typeof item === "string" ? etag : item.etag;
+        const response = await fetch(this.serviceUri + "/moveItemsToTrash", {
+            headers: this.service.authStore.getHeaders(),
+            method: "POST",
+            body: JSON.stringify({
+                items: [
+                    {
+                        drivewsid,
+                        etag: itemEtag,
+                        clientId: "auth-ab95dcd4-65db-11ed-a792-244bfee1e3c1"
+                    }
+                ]
+            })
+        });
+        return response.json();
+    }
 }

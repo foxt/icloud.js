@@ -147,9 +147,9 @@ export default class iCloudService extends EventEmitter {
                 }
             } else {
                 if (authResponse.status == 401) {
-                    throw new Error("Recieved 401 error. Incorrect password?");
+                    throw new Error("Recieved 401 error. Incorrect password? (" + authResponse.status + ", " + await authResponse.text() + ")");
                 }
-                throw new Error("Invalid status code: " + authResponse.status);
+                throw new Error("Invalid status code: " + authResponse.status + ", " + await authResponse.text());
             }
         } catch (e) {
             this._setState(iCloudServiceStatus.Error, e);
@@ -171,7 +171,7 @@ export default class iCloudService extends EventEmitter {
             if (this.options.trustDevice) this.getTrustToken().then(this.getiCloudCookies.bind(this));
             else this.getiCloudCookies();
         } else {
-            throw new Error("Invalid status code: " + authResponse.status);
+            throw new Error("Invalid status code: " + authResponse.status + " " + await authResponse.text());
         }
     }
 
