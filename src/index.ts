@@ -96,6 +96,9 @@ export default class iCloudService extends EventEmitter {
     async authenticate(username?: string, password?: string) {
         username = username || this.options.username;
         password = password || this.options.password;
+        if (typeof (username as any) !== "string") throw new TypeError("authenticate(username?: string, password?: string): 'username' was " + username.toString())
+        if (typeof (password as any) !== "string") throw new TypeError("authenticate(username?: string, password?: string): 'password' was " + password.toString())
+        
         if (!username) {
             try {
                 const saved = (await require("keytar").findCredentials("https://idmsa.apple.com"))[0];
@@ -158,6 +161,10 @@ export default class iCloudService extends EventEmitter {
     }
 
     async provideMfaCode(code: string) {
+        if (typeof (code as any) !== "string") throw new TypeError("provideMfaCode(code: string): 'code' was " + code.toString())
+        code = code.replace(/\D/g,"")
+        if (code.length !== 6) console.warn("[icloud] Provided MFA wasn't 6-digits!")
+
         if (!this.authStore.validateAuthSecrets()) {
             throw new Error("Cannot provide MFA code without calling authenticate first!");
         }
@@ -242,6 +249,7 @@ export default class iCloudService extends EventEmitter {
     getService(service: "ubiquity"): iCloudUbiquityService;
     getService(service: "drivews"): iCloudDriveService
     getService(service:string) {
+        if (!this.serviceConstructors[service]) throw new TypeError(`getService(service: string): 'service' was " + ${service.toString()}, must be one of ${Object.keys(this.serviceConstructors).join(", ")}`);
         if (!this._serviceCache[service]) {
             this._serviceCache[service] = new this.serviceConstructors[service](this, this.accountInfo.webservices[service].url);
         }
