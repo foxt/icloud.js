@@ -6,6 +6,7 @@ import path from "path";
 import iCloudAuthenticationStore from "./authStore";
 import { AUTH_ENDPOINT, AUTH_HEADERS, DEFAULT_HEADERS, SETUP_ENDPOINT } from "./consts";
 import { iCloudAccountDetailsService } from "./services/account";
+import { iCloudCalendarService } from "./services/calendar";
 import { iCloudDriveService } from "./services/drive";
 import { iCloudFindMyService } from "./services/findMy";
 import { iCloudUbiquityService } from "./services/ubiquity";
@@ -241,13 +242,15 @@ export default class iCloudService extends EventEmitter {
         account: iCloudAccountDetailsService,
         findme: iCloudFindMyService,
         ubiquity: iCloudUbiquityService,
-        drivews: iCloudDriveService
+        drivews: iCloudDriveService,
+        calendar: iCloudCalendarService
     };
 
     getService(service: "account"): iCloudAccountDetailsService;
     getService(service: "findme"): iCloudFindMyService;
     getService(service: "ubiquity"): iCloudUbiquityService;
     getService(service: "drivews"): iCloudDriveService
+    getService(service: "calendar"): iCloudCalendarService
     getService(service:string) {
         if (!this.serviceConstructors[service]) throw new TypeError(`getService(service: string): 'service' was " + ${service.toString()}, must be one of ${Object.keys(this.serviceConstructors).join(", ")}`);
         if (!this._serviceCache[service]) {
