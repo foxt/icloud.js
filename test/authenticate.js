@@ -20,5 +20,9 @@ module.exports = (async() => {
     await icloud.awaitReady;
     console.log(icloud.status);
     console.log("Hello, " + icloud.accountInfo.dsInfo.fullName);
+    if (require.main === module) {
+        console.log("Entering REPL, icloud is available as 'icloud'");
+        require("node:repl").start().context.icloud = icloud;
+    }
     return icloud;
 })();
