@@ -1,8 +1,8 @@
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 import fetch from "node-fetch";
 import iCloudService from "..";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -162,7 +162,7 @@ export class iCloudCalendarService {
             usertz: dayjs.tz.guess()
         });
 
-        return response.Event;
+        return response.Event || [];
     }
     async calendars() {
         const response = await this.fetchEndpoint<iCloudCalendarStartupResponse>("/startup", {
@@ -173,6 +173,6 @@ export class iCloudCalendarService {
             usertz: dayjs.tz.guess()
         });
 
-        return response.Collection;
+        return response.Collection || [];
     }
 }
