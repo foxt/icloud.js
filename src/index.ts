@@ -9,6 +9,7 @@ import { iCloudAccountDetailsService } from "./services/account";
 import { iCloudCalendarService } from "./services/calendar";
 import { iCloudDriveService } from "./services/drive";
 import { iCloudFindMyService } from "./services/findMy";
+import { iCloudPhotosService } from "./services/photos";
 import { iCloudUbiquityService } from "./services/ubiquity";
 import { AccountInfo } from "./types";
 
@@ -165,6 +166,9 @@ export default class iCloudService extends EventEmitter {
         if (typeof (code as any) !== "string") throw new TypeError("provideMfaCode(code: string): 'code' was " + code.toString());
         code = code.replace(/\D/g, "");
         if (code.length !== 6) console.warn("[icloud] Provided MFA wasn't 6-digits!");
+        if (typeof (code as any) !== "string") throw new TypeError("provideMfaCode(code: string): 'code' was " + code.toString());
+        code = code.replace(/\D/g, "");
+        if (code.length !== 6) console.warn("[icloud] Provided MFA wasn't 6-digits!");
 
         if (!this.authStore.validateAuthSecrets()) {
             throw new Error("Cannot provide MFA code without calling authenticate first!");
@@ -243,7 +247,8 @@ export default class iCloudService extends EventEmitter {
         findme: iCloudFindMyService,
         ubiquity: iCloudUbiquityService,
         drivews: iCloudDriveService,
-        calendar: iCloudCalendarService
+        calendar: iCloudCalendarService,
+        photos: iCloudPhotosService
     };
 
     getService(service: "account"): iCloudAccountDetailsService;
@@ -251,6 +256,7 @@ export default class iCloudService extends EventEmitter {
     getService(service: "ubiquity"): iCloudUbiquityService;
     getService(service: "drivews"): iCloudDriveService
     getService(service: "calendar"): iCloudCalendarService
+    getService(service: "photos"): iCloudPhotosService
     getService(service:string) {
         if (!this.serviceConstructors[service]) throw new TypeError(`getService(service: string): 'service' was ${service.toString()}, must be one of ${Object.keys(this.serviceConstructors).join(", ")}`);
         if (!this._serviceCache[service]) {
