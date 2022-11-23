@@ -166,9 +166,6 @@ export default class iCloudService extends EventEmitter {
         if (typeof (code as any) !== "string") throw new TypeError("provideMfaCode(code: string): 'code' was " + code.toString());
         code = code.replace(/\D/g, "");
         if (code.length !== 6) console.warn("[icloud] Provided MFA wasn't 6-digits!");
-        if (typeof (code as any) !== "string") throw new TypeError("provideMfaCode(code: string): 'code' was " + code.toString());
-        code = code.replace(/\D/g, "");
-        if (code.length !== 6) console.warn("[icloud] Provided MFA wasn't 6-digits!");
 
         if (!this.authStore.validateAuthSecrets()) {
             throw new Error("Cannot provide MFA code without calling authenticate first!");
