@@ -256,6 +256,9 @@ export default class iCloudService extends EventEmitter {
     getService(service: "photos"): iCloudPhotosService
     getService(service:string) {
         if (!this.serviceConstructors[service]) throw new TypeError(`getService(service: string): 'service' was ${service.toString()}, must be one of ${Object.keys(this.serviceConstructors).join(", ")}`);
+        if (service === "photos") {
+            this._serviceCache[service] = new this.serviceConstructors[service](this, this.accountInfo.webservices.ckdatabasews.url);
+        }
         if (!this._serviceCache[service]) {
             this._serviceCache[service] = new this.serviceConstructors[service](this, this.accountInfo.webservices[service].url);
         }
