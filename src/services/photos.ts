@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 import fetch, { HeadersInit } from "node-fetch";
 import iCloudService from "..";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -457,7 +457,7 @@ export class iCloudPhotosService {
     constructor(private service: iCloudService, private serviceUri: string) {
         this.endpointService = new iCloudPhotosEndpointService(serviceUri, service.authStore.getHeaders());
     }
-    async getAlbums(): Promise<typeof this._albums> {
+    async getAlbums(): Promise<Map<string, iCloudPhotoAlbum>> {
         if (this._albums.size > 0) {
             return this._albums;
         }
@@ -517,32 +517,30 @@ class iCloudPhotoAlbum {
     ) {}
     /* eslint-enable no-useless-constructor, no-empty-function */
     get title(): string { return this.name; }
-    get length(): Promise<number> {
-        return new Promise(async(resolve) => {
-            if (!this._length) {
-                const result = await this.endpointService.fetch<any>("/internal/records/query/batch", {
-                    batch: [
-                        {
-                            resultsLimit: 1,
-                            query: {
-                                filterBy: {
-                                    fieldName: "indexCountID",
-                                    fieldValue: { type: "STRING_LIST", value: [this.album.obj_type] },
-                                    comparator: "IN"
-                                },
-                                recordType: "HyperionIndexCountLookup"
+    async getLength(): Promise<number> {
+        if (!this._length) {
+            const result = await this.endpointService.fetch<any>("/internal/records/query/batch", {
+                batch: [
+                    {
+                        resultsLimit: 1,
+                        query: {
+                            filterBy: {
+                                fieldName: "indexCountID",
+                                fieldValue: { type: "STRING_LIST", value: [this.album.obj_type] },
+                                comparator: "IN"
                             },
-                            zoneWide: true,
-                            zoneID: { zoneName: "PrimarySync" }
-                        }
-                    ]
-                });
+                            recordType: "HyperionIndexCountLookup"
+                        },
+                        zoneWide: true,
+                        zoneID: { zoneName: "PrimarySync" }
+                    }
+                ]
+            });
 
-                this._length = result.batch[0].records[0].fields.itemCount.value;
-            }
+            this._length = result.batch[0].records[0].fields.itemCount.value;
+        }
 
-            resolve(this._length);
-        });
+        return this._length;
     }
     private async photosEndpointBody(offset: number) {
         return {
@@ -671,49 +669,47 @@ class iCloudPhotoAlbum {
             zoneID: { zoneName: "PrimarySync" }
         };
     }
-    get photos(): Promise<Array<iCloudPhotoAsset>> {
-        return new Promise(async(resolve) => {
-            if (this._photos.length) {
-                resolve(this._photos);
-            }
+    async getPhotos(): Promise<Array<iCloudPhotoAsset>> {
+        if (this._photos.length) {
+            return this._photos;
+        }
 
-            const isDescending = this.album.direction === "DESCENDING";
-            const total = await this.length;
-            let offset = isDescending ? total - 1 : 0;
+        const isDescending = this.album.direction === "DESCENDING";
+        const total = await this.getLength();
+        let offset = isDescending ? total - 1 : 0;
 
-            while (true) {
-                const result = await this.endpointService.fetch<QueryPhotoResponse>(
-                    "/records/query",
-                    await this.photosEndpointBody(offset)
-                );
+        while (true) {
+            const result = await this.endpointService.fetch<QueryPhotoResponse>(
+                "/records/query",
+                await this.photosEndpointBody(offset)
+            );
 
-                const assetRecords = {};
-                const masterRecords = [];
+            const assetRecords = {};
+            const masterRecords = [];
 
-                result.records.map((item) => {
-                    switch (item.recordType) {
-                    case "CPLAsset":
-                        assetRecords[item.fields.masterRef.value.recordName] = item;
-                        break;
-                    case "CPLMaster":
-                        masterRecords.push(item);
-                        break;
-                    }
-                });
-
-                masterRecords.map((record) => {
-                    this._photos.push(new iCloudPhotoAsset(this.endpointService, record, assetRecords[record.recordName]));
-                });
-
-                if (masterRecords.length > 0) {
-                    offset += isDescending ? -masterRecords.length : masterRecords.length;
-                } else {
+            result.records.map((item) => {
+                switch (item.recordType) {
+                case "CPLAsset":
+                    assetRecords[item.fields.masterRef.value.recordName] = item;
+                    break;
+                case "CPLMaster":
+                    masterRecords.push(item);
                     break;
                 }
-            }
+            });
 
-            resolve(this._photos);
-        });
+            masterRecords.map((record) => {
+                this._photos.push(new iCloudPhotoAsset(this.endpointService, record, assetRecords[record.recordName]));
+            });
+
+            if (masterRecords.length > 0) {
+                offset += isDescending ? -masterRecords.length : masterRecords.length;
+            } else {
+                break;
+            }
+        }
+
+        return this._photos;
     }
 }
 
