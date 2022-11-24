@@ -453,7 +453,7 @@ export class iCloudPhotosEndpointService {
 
 export class iCloudPhotosService {
     private endpointService: iCloudPhotosEndpointService;
-    private _albums: Record<string, iCloudPhotoAlbum> = {};
+    private _albums: Map<string, iCloudPhotoAlbum> = new Map();
     constructor(private service: iCloudService, private serviceUri: string) {
         this.endpointService = new iCloudPhotosEndpointService(serviceUri, service.authStore.getHeaders());
     }
