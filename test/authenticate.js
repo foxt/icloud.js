@@ -8,8 +8,7 @@ module.exports = (async() => {
         username: username ? username : undefined,
         password: password ? password : undefined,
         saveCredentials: true,
-        trustDevice: true,
-        dataDirectory: "/tmp/"
+        trustDevice: true
     });
     await icloud.authenticate();
     console.log(icloud.status);
