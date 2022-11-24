@@ -457,51 +457,51 @@ export class iCloudPhotosService {
     constructor(private service: iCloudService, private serviceUri: string) {
         this.endpointService = new iCloudPhotosEndpointService(serviceUri, service.authStore.getHeaders());
     }
-    get albums(): Promise<Record<string, iCloudPhotoAlbum>> {
-        return new Promise(async(resolve) => {
-            if (Object.keys(this._albums).length <= 0) {
-                const folders = (await this.endpointService.fetch<{records: Array<Folder>}>("/records/query", {
-                    query: { recordType: "CheckIndexingState" },
-                    zoneID: { zoneName: "PrimarySync" }
-                })).records;
+    async getAlbums(): Promise<typeof this._albums> {
+        if (this._albums.size > 0) {
+            return this._albums;
+        }
 
-                if (folders[0].fields.state.value !== "FINISHED") {
-                    throw new Error(
-                        "iCloud Photo Library not finished indexing. Please try again in a few minutes."
-                    );
-                }
+        const folders = (await this.endpointService.fetch<{records: Array<Folder>}>("/records/query", {
+            query: { recordType: "CheckIndexingState" },
+            zoneID: { zoneName: "PrimarySync" }
+        })).records;
 
-                Object.entries(SMART_FOLDERS).map(([folderName, folderOptions]) => {
-                    this._albums[folderName] = new iCloudPhotoAlbum(this.endpointService, folderName, folderOptions);
-                });
+        if (folders[0].fields.state.value !== "FINISHED") {
+            throw new Error(
+                "iCloud Photo Library not finished indexing. Please try again in a few minutes."
+            );
+        }
 
-                folders.map((folder) => {
-                    if (!("albumNameEnc" in folder.fields)) return;
-                    if (folder.recordName === "----Root-Folder----" || folder.fields.isDeleted?.value) return;
-
-                    const folderName = Buffer.from(folder.fields.albumNameEnc.value as string, "base64").toString("utf-8");
-
-                    this._albums[folderName] = new iCloudPhotoAlbum(
-                        this.endpointService,
-                        folderName,
-                        {
-                            obj_type: "CPLContainerRelationLiveByAssetDate",
-                            list_type: `CPLContainerRelationNotDeletedByAssetDate${folder.recordName}`,
-                            direction: "ASCENDING",
-                            query_filter: [{
-                                fieldName: "parentId",
-                                comparator: "EQUALS",
-                                fieldValue: { type: "STRING", value: folder.recordName }
-                            }]
-                        }
-                    );
-                });
-            }
-
-            resolve(this._albums);
+        Object.entries(SMART_FOLDERS).map(([folderName, folderOptions]) => {
+            this._albums.set(folderName, new iCloudPhotoAlbum(this.endpointService, folderName, folderOptions));
         });
+
+        folders.map((folder) => {
+            if (!("albumNameEnc" in folder.fields)) return;
+            if (folder.recordName === "----Root-Folder----" || folder.fields.isDeleted?.value) return;
+
+            const folderName = Buffer.from(folder.fields.albumNameEnc.value as string, "base64").toString("utf-8");
+
+            this._albums.set(folderName, new iCloudPhotoAlbum(
+                this.endpointService,
+                folderName,
+                {
+                    obj_type: "CPLContainerRelationLiveByAssetDate",
+                    list_type: `CPLContainerRelationNotDeletedByAssetDate${folder.recordName}`,
+                    direction: "ASCENDING",
+                    query_filter: [{
+                        fieldName: "parentId",
+                        comparator: "EQUALS",
+                        fieldValue: { type: "STRING", value: folder.recordName }
+                    }]
+                }
+            ));
+        });
+
+        return this._albums;
     }
-    get all() { return this._albums["All Photos"]; }
+    get all() { return this._albums.get("All Photos"); }
 }
 
 
