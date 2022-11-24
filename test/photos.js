@@ -11,11 +11,11 @@ authenticate.then(async(icloud) => {
     if (!album) {
         return console.log("Cannot find 'Favorites' album");
     }
-    console.log(`It contains ${await album.length} photos`);
+    console.log(`It contains ${await album.getLength()} photos`);
     console.log("Fetch photos");
-    const photos = await album.photos;
+    const photos = await album.getPhotos();
     console.log("Get your first photo from album");
-    const photo = photos[0];
+    const photo = photos.find((p) => pz.filename.endsWith(".JPG"));
     console.log({
         id: photo.id,
         filename: photo.filename,
@@ -26,7 +26,7 @@ authenticate.then(async(icloud) => {
         dimension: photo.dimension,
         versions: photo.versions
     });
-    const filePath = "./image.jpg";
+    const filePath = photo.filename;
     try {
         const absFilePath = path.resolve(filePath);
         await writeFile(absFilePath, Buffer.from(await photo.download()));
