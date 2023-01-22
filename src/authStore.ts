@@ -83,7 +83,7 @@ export default class iCloudAuthenticationStore {
         return { ...AUTH_HEADERS, scnt: this.scnt, "X-Apple-ID-Session-Id": this.sessionId, Cookie: "aasp=" + this.aasp };
     }
     getHeaders() {
-        return { ...DEFAULT_HEADERS, Cookie: this.icloudCookies.map((cookie) => cookie.cookieString()).join("; ") };
+        return { ...DEFAULT_HEADERS, Cookie: this.icloudCookies.filter((a) => a.value).map((cookie) => cookie.cookieString()).join("; ") };
     }
 
     validateAccountTokens() {
