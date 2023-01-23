@@ -74,9 +74,7 @@ export interface iCloudStorageUsage {
 function sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
-/**
-  very cool
-**/
+
 export default class iCloudService extends EventEmitter {
     authStore: iCloudAuthenticationStore;
     options: iCloudServiceSetupOptions;
