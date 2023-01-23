@@ -13,7 +13,7 @@ This library would not be possible without the help of:
 
 ## Usage
 
-For more indepth usage details, check the [examples](https://github.com/foxt/icloud.js/tree/master/test)
+Check the [examples](https://github.com/foxt/icloud.js/tree/master/test), or read the [API reference](https://foxt.dev/icloud.js)
 
 ### Basic example
 
