@@ -16,4 +16,4 @@ git commit -m "update docs"
 
 branch=$(git rev-parse --abbrev-ref HEAD)
 
-git push origin $branch:$branch-docs
+git push --force origin $branch:$branch-docs
