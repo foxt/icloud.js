@@ -39,7 +39,7 @@ jobs:
       - name: Install dependencies
         run:  npm i
       - name: Build docs
-        run:  typedoc src/index.ts src/services/*  --darkHighlightTheme one-dark-pro --lightHighlightTheme one-dark-pro
+        run:  typedoc src/index.ts src/services/* --customCss docs.css --darkHighlightTheme one-dark-pro --lightHighlightTheme one-dark-pro 
 
       - name: Setup Pages
         uses: actions/configure-pages@v2
