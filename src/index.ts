@@ -3,7 +3,7 @@ import fs from "fs";
 import fetch from "node-fetch";
 import os from "os";
 import path from "path";
-import iCloudAuthenticationStore from "./authStore";
+import { iCloudAuthenticationStore } from "./authStore";
 import { AUTH_ENDPOINT, AUTH_HEADERS, DEFAULT_HEADERS, SETUP_ENDPOINT } from "./consts";
 import { iCloudAccountDetailsService } from "./services/account";
 import { iCloudCalendarService } from "./services/calendar";
@@ -12,7 +12,9 @@ import { iCloudFindMyService } from "./services/findMy";
 import { iCloudPhotosService } from "./services/photos";
 import { iCloudUbiquityService } from "./services/ubiquity";
 import { AccountInfo } from "./types";
-export { AccountInfo } from "./types";
+
+export type { iCloudAuthenticationStore } from "./authStore";
+export type { AccountInfo } from "./types";
 
 /**
  * These are the options that can be passed to the iCloud service constructor.

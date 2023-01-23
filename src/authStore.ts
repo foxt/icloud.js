@@ -5,7 +5,7 @@ import { Cookie } from "tough-cookie";
 import { iCloudServiceSetupOptions } from ".";
 import { AUTH_HEADERS, DEFAULT_HEADERS } from "./consts";
 
-export default class iCloudAuthenticationStore {
+export class iCloudAuthenticationStore {
     /**
      * The options provided to the iCloudService that owns this AuthenticationStore
      */
