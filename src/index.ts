@@ -12,6 +12,7 @@ import { iCloudFindMyService } from "./services/findMy";
 import { iCloudPhotosService } from "./services/photos";
 import { iCloudUbiquityService } from "./services/ubiquity";
 import { AccountInfo } from "./types";
+export { AccountInfo } from "./types";
 
 /**
  * These are the options that can be passed to the iCloud service constructor.
