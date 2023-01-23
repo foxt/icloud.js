@@ -150,6 +150,7 @@ export default class iCloudService extends EventEmitter {
 
 
         if (!fs.existsSync(this.options.dataDirectory)) fs.mkdirSync(this.options.dataDirectory);
+        this.authStore.loadTrustToken(this.options.username);
 
 
 
@@ -270,10 +271,10 @@ export default class iCloudService extends EventEmitter {
 
 
     async checkPCS() {
+        console.log("Test PCS");
         const pcsTest = await fetch("https://setup.icloud.com/setup/ws/1/requestWebAccessState", { headers: this.authStore.getHeaders(), method: "POST" });
         if (pcsTest.status == 200) {
             const j = await pcsTest.json();
-            console.log(j);
             this.pcsEnabled = typeof j.isDeviceConsentedForPCS == "boolean";
             this.pcsAccess = this.pcsEnabled ? j.isDeviceConsentedForPCS : true;
             this.ICRSDisabled = j.isICRSDisabled || false;
@@ -286,15 +287,18 @@ export default class iCloudService extends EventEmitter {
         }
         await this.checkPCS();
         if (!this.pcsAccess) {
+            console.log("Enabe Decive Consent for PCS...");
             const f = await fetch("https://setup.icloud.com/setup/ws/1/enableDeviceConsentForPCS", {
                 headers: this.authStore.getHeaders(),
                 method: "POST"
             });
             const j = await f.json();
+            console.log(j);
             if (j.isDeviceConsentNotificationSent !== true) {
                 throw new Error("Unable to request PCS access: " + JSON.stringify(j));
             }
             while (true) {
+                console.log("Waiting for PCS access... ");
                 await this.checkPCS();
                 if (this.pcsAccess) break;
                 await sleep(1000);
@@ -306,6 +310,7 @@ export default class iCloudService extends EventEmitter {
         if (this.status !== iCloudServiceStatus.Ready) {
             throw new Error("iCloud is not ready.");
         }
+        console.log("Requesting PCS");
         let f = await fetch("https://setup.icloud.com/setup/ws/1/requestPCS", {
             headers: this.authStore.getHeaders(),
             method: "POST",
@@ -319,28 +324,54 @@ export default class iCloudService extends EventEmitter {
             console.warn("[icloud] requestServiceAcess: User has not disabled iCloud DRS.");
             return true;
         } else if (j.message == "Requested the device to upload cookies.") {
-            while (true) {
-                f = await fetch("https://setup.icloud.com/setup/ws/1/requestPCS", {
-                    headers: this.authStore.getHeaders(),
-                    method: "POST",
-                    body: JSON.stringify({
-                        appName: serviceName,
-                        derivedFromUserAction: false
-                    })
-                });
-                j = await f.json();
-                if (j.message == "Cookies not available yet on server.") {
-                    await sleep(1000);
-                } else {
-                    break;
-                }
-            }
+            console.log("Requesting PCS 327");
+            f = await fetch("https://setup.icloud.com/setup/ws/1/requestPCS", {
+                headers: this.authStore.getHeaders(),
+                method: "POST",
+                body: JSON.stringify({
+                    appName: serviceName,
+                    derivedFromUserAction: false
+                })
+            });
+            j = await f.json();
         } else if (j.status == "failure") {
             console.debug("[icloud] requestServiceAcess: " + j.message);
             await this.requestPCS();
-            return this.requestServiceAccess(serviceName);
+            console.log("Requesting PCS 340");
+            f = await fetch("https://setup.icloud.com/setup/ws/1/requestPCS", {
+                headers: this.authStore.getHeaders(),
+                method: "POST",
+                body: JSON.stringify({
+                    appName: serviceName,
+                    derivedFromUserAction: false
+                })
+            });
+            j = await f.json();
+            if (j.status == "failure" && j.message !== "Cookies not available yet on server.") {
+                throw new Error("Unable to request service access: " + j.message);
+            }
         }
-        console.log(j, f.headers.raw, f.headers.raw["set-cookie"]);
+        let i = 0;
+        while (j.message == "Cookies not available yet on server.") {
+            i++;
+            if (i > 10) {
+                throw new Error("Unable to request service access: " + j.message);
+            }
+            await sleep(1000);
+            console.log("361");
+            f = await fetch("https://setup.icloud.com/setup/ws/1/requestPCS", {
+                headers: this.authStore.getHeaders(),
+                method: "POST",
+                body: JSON.stringify({
+                    appName: serviceName,
+                    derivedFromUserAction: false
+                })
+            });
+            j = await f.json();
+        }
+        if (j.status !== "success") {
+            throw new Error("Unable to request service access: " + j.message);
+        }
         this.authStore.addCookies(f.headers.raw()["set-cookie"]);
         await this.checkPCS();
         return true;
