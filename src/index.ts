@@ -44,19 +44,30 @@ export interface iCloudServiceSetupOptions {
      */
     dataDirectory?: string;
 }
-
+/**
+ * The state of the iCloudService.
+ */
 export const enum iCloudServiceStatus {
+    // iCloudService#authenticate has not been called yet.
     NotStarted = "NotStarted",
+    // Called after iCloudService#authenticate was called and local validation of the username & password was verified.
     Started = "Started",
+    // The user needs to be prompted for the MFA code, which can be provided by calling iCloudService#provideMfaCode
     MfaRequested = "MfaRequested",
+    //  The MFA code was successfully validated.
     Authenticated = "Authenticated",
+    // Authentication has succeeded.
     Trusted = "Trusted",
+    // The iCloudService is ready for use.
     Ready = "Ready",
+    // The authentication failed.
     Error = "Error"
 }
 
 
-
+/**
+ * Information about the account's storage usage.
+ */
 export interface iCloudStorageUsage {
     storageUsageByMedia: Array<{
       mediaKey: string
@@ -128,6 +139,9 @@ export default class iCloudService extends EventEmitter {
      */
     options: iCloudServiceSetupOptions;
 
+    /**
+     * The status of the iCloudService.
+     */
     status: iCloudServiceStatus = iCloudServiceStatus.NotStarted;
 
     /*
@@ -147,6 +161,10 @@ export default class iCloudService extends EventEmitter {
 
     accountInfo?: AccountInfo;
 
+    /**
+     * A promise that can be awaited that resolves when the iCloudService is ready.
+     * Will reject if an error occurs during authentication.
+     */
     awaitReady = new Promise((resolve, reject) => {
         this.on(iCloudServiceStatus.Ready, resolve);
         this.on(iCloudServiceStatus.Error, reject);
@@ -165,6 +183,13 @@ export default class iCloudService extends EventEmitter {
         this.emit(state, ...args);
     }
 
+    /**
+     * Authenticates to the iCloud service.
+     * If a username is not passed to this function, it will use the one provided to the options object in the constructor, failing that, it will find the first result in the system's keychain matching https://idmsa.apple.com
+     * The same applies to the password. If it is not provided to this function, the options object will be used, and then it will check the keychain for a keychain matching the email for idmsa.apple.com
+     * @param username The username to use instead of the one provided in this iCloudService's options
+     * @param password The password to use instead of the one provided in this iCloudService's options
+     */
     async authenticate(username?: string, password?: string) {
         username = username || this.options.username;
         password = password || this.options.password;
@@ -211,7 +236,7 @@ export default class iCloudService extends EventEmitter {
             if (authResponse.status == 200) {
                 if (this.authStore.processAuthSecrets(authResponse)) {
                     this._setState(iCloudServiceStatus.Trusted);
-                    this.getiCloudCookies();
+                    this._getiCloudCookies();
                 } else {
                     throw new Error("Unable to process auth response!");
                 }
@@ -233,6 +258,10 @@ export default class iCloudService extends EventEmitter {
         }
     }
 
+    /**
+     * Call this to provide the MFA code that was sent to the user's devices.
+     * @param code The six digit MFA code.
+     */
     async provideMfaCode(code: string) {
         if (typeof (code as any) !== "string") throw new TypeError("provideMfaCode(code: string): 'code' was " + code.toString());
         code = code.replace(/\D/g, "");
@@ -248,14 +277,14 @@ export default class iCloudService extends EventEmitter {
         );
         if (authResponse.status == 204) {
             this._setState(iCloudServiceStatus.Authenticated);
-            if (this.options.trustDevice) this.getTrustToken().then(this.getiCloudCookies.bind(this));
-            else this.getiCloudCookies();
+            if (this.options.trustDevice) this._getTrustToken().then(this._getiCloudCookies.bind(this));
+            else this._getiCloudCookies();
         } else {
             throw new Error("Invalid status code: " + authResponse.status + " " + await authResponse.text());
         }
     }
 
-    async getTrustToken() {
+    private async _getTrustToken() {
         if (!this.authStore.validateAuthSecrets()) {
             throw new Error("Cannot get auth token without calling authenticate first!");
         }
@@ -272,7 +301,7 @@ export default class iCloudService extends EventEmitter {
     }
 
 
-    async getiCloudCookies() {
+    private async _getiCloudCookies() {
         try {
             const data = {
                 dsWebAuthToken: this.authStore.sessionToken,
@@ -313,12 +342,9 @@ export default class iCloudService extends EventEmitter {
     }
 
 
-
-
-
-
-
-
+    /**
+     * Updates the PCS state (iCloudService.pcsEnabled, iCloudService.pcsAccess, iCloudService.ICDRSDisabled).
+     */
     async checkPCS() {
         const pcsTest = await fetch("https://setup.icloud.com/setup/ws/1/requestWebAccessState", { headers: this.authStore.getHeaders(), method: "POST" });
         if (pcsTest.status == 200) {
@@ -326,10 +352,18 @@ export default class iCloudService extends EventEmitter {
             this.pcsEnabled = typeof j.isDeviceConsentedForPCS == "boolean";
             this.pcsAccess = this.pcsEnabled ? j.isDeviceConsentedForPCS : true;
             this.ICDRSDisabled = j.isICDRSDisabled || false;
+        } else {
+            throw new Error("checkPCS: response code " + pcsTest.status);
         }
     }
 
-    async requestServiceAccess(appName: string) {
+    /**
+     * Requests PCS access to a specific service. Required to call before accessing any PCS protected services when iCloud Advanced Data Protection is enabled.
+     * @remarks Should only be called when iCloudService.ICDRSDisabled is `false`, however this function will check for you, and immediately return as it's not required..
+     * @experimental
+     * @param appName The service name to request access to.
+     */
+    async requestServiceAccess(appName: "iclouddrive") {
         await this.checkPCS();
         if (!this.ICDRSDisabled) {
             console.warn("[icloud] requestServiceAccess: ICRS is not disabled.");
@@ -376,6 +410,12 @@ export default class iCloudService extends EventEmitter {
 
 
     private _serviceCache: {[key: string]: any} = {};
+    /**
+     * A mapping of service names to their classes.
+     * This is used by {@link iCloudService.getService} to return the correct service class.
+     * @remarks You should **not** use this to instantiate services, use {@link iCloudService.getService} instead.
+     * @see {@link iCloudService.getService}
+     */
     serviceConstructors: {[key: string]: any} = {
         account: iCloudAccountDetailsService,
         findme: iCloudFindMyService,
@@ -385,12 +425,26 @@ export default class iCloudService extends EventEmitter {
         photos: iCloudPhotosService
     };
 
+    // Returns an instance of the 'account' (Account Details) service.
     getService(service: "account"): iCloudAccountDetailsService;
+    // Returns an instance of the 'findme' (Find My) service.
     getService(service: "findme"): iCloudFindMyService;
+    /**
+     * Returns an instance of the 'ubiquity' (Legacy iCloud Documents) service.
+     * @deprecated
+     */
     getService(service: "ubiquity"): iCloudUbiquityService;
+    // Returns an instance of the 'drivews' (iCloud Drive) service.
     getService(service: "drivews"): iCloudDriveService
+    // Returns an instance of the 'calendar' (iCloud Calendar) service.
     getService(service: "calendar"): iCloudCalendarService
+    // Returns an instance of the 'photos' (iCloud Photos) service.
     getService(service: "photos"): iCloudPhotosService
+    /**
+     * Returns an instance of the specified service. Results are cached, so subsequent calls will return the same instance.
+     * @param service The service name to return an instance of. Must be one of the keys in {@link iCloudService.serviceConstructors}.
+     * @returns {iCloudService}
+     */
     getService(service:string) {
         if (!this.serviceConstructors[service]) throw new TypeError(`getService(service: string): 'service' was ${service.toString()}, must be one of ${Object.keys(this.serviceConstructors).join(", ")}`);
         if (service === "photos") {
@@ -404,6 +458,11 @@ export default class iCloudService extends EventEmitter {
 
 
     private _storage;
+    /**
+     * Gets the storage usage data for the account.
+     * @param refresh Force a refresh of the storage usage data.
+     * @returns {Promise<iCloudStorageUsage>} The storage usage data.
+     */
     async getStorageUsage(refresh = false): Promise<iCloudStorageUsage> {
         if (!refresh && this._storage) return this._storage;
         const response = await fetch("https://setup.icloud.com/setup/ws/1/storageUsageInfo", { headers: this.authStore.getHeaders() });
