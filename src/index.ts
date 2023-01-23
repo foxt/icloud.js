@@ -278,7 +278,6 @@ export default class iCloudService extends EventEmitter {
             this.pcsEnabled = typeof j.isDeviceConsentedForPCS == "boolean";
             this.pcsAccess = this.pcsEnabled ? j.isDeviceConsentedForPCS : true;
             this.ICDRSDisabled = j.isICDRSDisabled || false;
-            console.log(j);
         }
     }
 
@@ -301,7 +300,6 @@ export default class iCloudService extends EventEmitter {
         }
         let pcsRequest = await fetch("https://setup.icloud.com/setup/ws/1/requestPCS", { headers: this.authStore.getHeaders(), method: "POST", body: JSON.stringify({ appName, derivedFromUserAction: true }) });
         let pcsJson = await pcsRequest.json();
-        console.log(pcsJson);
         while (true) {
             if (pcsJson.status == "success") {
                 break;
@@ -316,7 +314,6 @@ export default class iCloudService extends EventEmitter {
                 }
                 pcsRequest = await fetch("https://setup.icloud.com/setup/ws/1/requestPCS", { headers: this.authStore.getHeaders(), method: "POST", body: JSON.stringify({ appName, derivedFromUserAction: false }) });
                 pcsJson = await pcsRequest.json();
-                console.log(pcsJson);
             }
         }
         this.authStore.addCookies(pcsRequest.headers.raw()["set-cookie"]);
