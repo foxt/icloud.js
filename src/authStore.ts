@@ -20,7 +20,6 @@ export default class iCloudAuthenticationStore {
     constructor(options: iCloudServiceSetupOptions) {
         this.options = options;
         this.tknFile = path.format({ dir: options.dataDirectory, base: ".trust-token" });
-        this.loadTrustToken();
 
         Object.defineProperty(this, "trustToken", { enumerable: false });
         Object.defineProperty(this, "sessionId", { enumerable: false });
@@ -30,17 +29,17 @@ export default class iCloudAuthenticationStore {
         Object.defineProperty(this, "icloudCookies", { enumerable: false });
     }
 
-    loadTrustToken() {
+    loadTrustToken(account: string) {
         try {
-            this.trustToken = fs.readFileSync(this.tknFile, "utf8");
+            this.trustToken = fs.readFileSync(this.tknFile + "-" + Buffer.from(account.toLowerCase()).toString("base64"), "utf8");
         } catch (e) {
             console.debug("[icloud] Unable to load trust token:", e.toString());
         }
     }
-    writeTrustToken() {
+    writeTrustToken(account: string) {
         try {
             if (!fs.existsSync(this.options.dataDirectory)) fs.mkdirSync(this.options.dataDirectory);
-            require("fs").writeFileSync(this.tknFile, this.trustToken);
+            require("fs").writeFileSync(this.tknFile + "-" + Buffer.from(account.toLowerCase()).toString("base64"), this.trustToken);
         } catch (e) {
             console.warn("[icloud] Unable to write trust token:", e.toString());
         }
@@ -72,18 +71,21 @@ export default class iCloudAuthenticationStore {
             .filter((v) => !!v);
         return !!this.icloudCookies.length;
     }
-    processAccountTokens(trustResponse: Response) {
+    processAccountTokens(account:string, trustResponse: Response) {
         this.sessionToken = trustResponse.headers.get("x-apple-session-token");
         this.trustToken = trustResponse.headers.get("x-apple-twosv-trust-token");
-        this.writeTrustToken();
+        this.writeTrustToken(account);
         return this.validateAccountTokens();
+    }
+    addCookies(cookies: string[]) {
+        cookies.map((v) => Cookie.parse(v)).forEach((v) => this.icloudCookies.push(v));
     }
 
     getMfaHeaders() {
         return { ...AUTH_HEADERS, scnt: this.scnt, "X-Apple-ID-Session-Id": this.sessionId, Cookie: "aasp=" + this.aasp };
     }
     getHeaders() {
-        return { ...DEFAULT_HEADERS, Cookie: this.icloudCookies.map((cookie) => cookie.cookieString()).join("; ") };
+        return { ...DEFAULT_HEADERS, Cookie: this.icloudCookies.filter((a) => a.value).map((cookie) => cookie.cookieString()).join("; ") };
     }
 
     validateAccountTokens() {

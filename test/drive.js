@@ -2,6 +2,7 @@ const authenticate = require("./authenticate");
 const input = require("input");
 
 authenticate.then(async(icloud) => {
+    await icloud.requestServiceAccess("iclouddrive");
     const driveService = icloud.getService("drivews");
     let root = await driveService.getNode();
     while (true) {
