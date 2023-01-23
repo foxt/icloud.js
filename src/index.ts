@@ -13,12 +13,34 @@ import { iCloudPhotosService } from "./services/photos";
 import { iCloudUbiquityService } from "./services/ubiquity";
 import { AccountInfo } from "./types";
 
-
+/**
+ * These are the options that can be passed to the iCloud service constructor.
+ */
 export interface iCloudServiceSetupOptions {
+    /**
+     * The username of the iCloud account to log in to.
+     * Can be provided now (at construction time) or later (on iCloudService#authenticate).
+     */
     username?: string;
+    /**
+     * The password of the iCloud account to log in to.
+     * Can be provided now (at construction time) or later (on iCloudService#authenticate).
+     */
     password?: string;
+    /**
+     * Whether to save the credentials to the system's secret store.
+     * (i.e. Keychain on macOS)
+     */
     saveCredentials?: boolean;
+    /**
+     * Whether to store the trust-token to disk.
+     * This allows future logins to be done without MFA.
+     */
     trustDevice?: boolean;
+    /**
+     * The directory to store the trust-token in.
+     * Defaults to the ~/.icloud directory.
+     */
     dataDirectory?: string;
 }
 
@@ -70,13 +92,39 @@ export interface iCloudStorageUsage {
     }
   }
 
-
 function sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * The main iCloud service class
+ * It serves as a central manager for logging in and exposes all other services.
+ * @example ```ts
+const icloud = new iCloud({
+    username: "johnny.appleseed@icloud.com",
+    password: "hunter2",
+    saveCredentials: true,
+    trustDevice: true
+});
+await icloud.authenticate();
+console.log(icloud.status);
+if (icloud.status === "MfaRequested") {
+    await icloud.provideMfaCode("123456");
+}
+await icloud.awaitReady;
+console.log(icloud.status);
+console.log("Hello, " + icloud.accountInfo.dsInfo.fullName);
+```
+ */
 export default class iCloudService extends EventEmitter {
+    /**
+     * The authentication store for this service instance.
+     * Manages cookies & trust tokens.
+     */
     authStore: iCloudAuthenticationStore;
+    /**
+     * The options for this service instance.
+     */
     options: iCloudServiceSetupOptions;
 
     status: iCloudServiceStatus = iCloudServiceStatus.NotStarted;
@@ -247,7 +295,7 @@ export default class iCloudService extends EventEmitter {
 
                     this._setState(iCloudServiceStatus.Ready);
                     try {
-                        require("keytar").setPassword("https://idmsa.apple.com", this.options.username, this.options.password);
+                        if (this.options.saveCredentials) require("keytar").setPassword("https://idmsa.apple.com", this.options.username, this.options.password);
                     } catch (e) {
                         console.warn("[icloud] Unable to save account credentials:", e);
                     }
