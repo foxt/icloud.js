@@ -12,7 +12,7 @@ export class iCloudAuthenticationStore {
     options: iCloudServiceSetupOptions;
     /**
      * The exact file path to the base file name of the trust token file.
-     * @default "~/.icloud/trust-token"
+     * @default "~/.icloud/.trust-token"
      * @remarks The actual file name will be tknFile + "-" + base64(lowercase(username))
      */
     tknFile: string;
