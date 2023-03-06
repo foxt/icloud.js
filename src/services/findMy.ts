@@ -215,7 +215,7 @@ export class iCloudFindMyService {
     constructor(service: iCloudService, serviceUri: string) {
         this.service = service;
         this.serviceUri = serviceUri;
-        this.refresh();
+        //this.refresh();
     }
     devices: Map<string, iCloudFindMyDevice> = new Map();
 	async refresh(selectedDevice = "all") {
