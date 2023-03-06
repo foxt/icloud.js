@@ -218,7 +218,29 @@ export class iCloudFindMyService {
         this.refresh();
     }
     devices: Map<string, iCloudFindMyDevice> = new Map();
-    async refresh(selectedDevice = "all") {
+	async refresh(selectedDevice = "all") {
+		//Changed 6th March 2023 - davidcreager -   if refresh fails with status 450, reauthenticate and then refresh again
+		let {success, json, responseStatus} = await this._refreshRequester( selectedDevice );
+		if ( [ 450, 451, 500 ].includes(responseStatus) ){
+			await this.service.authenticate();
+			await this.service.awaitReady;
+			({success, json, responseStatus} = await this._refreshRequester( selectedDevice ) );
+			if (!success) {
+				throw new Error("Refresh failed with status " + responseStatus);
+				return null;
+			}
+		}
+		if (!success) {
+			throw new Error("Refresh failed with status " + responseStatus);
+		}
+		const newDevices = new Map();
+        for (const device of json.content) {
+            newDevices.set(device.id, (this.devices.get(device.id) || new iCloudFindMyDevice(this)).apply(device));
+        }
+        this.devices = newDevices;
+		return json as iCloudFindMyResponse;
+	}
+    async _refreshRequester(selectedDevice = "all") {
         const request = await fetch(
             this.serviceUri + "/fmipservice/client/web/refreshClient",
             {
@@ -234,12 +256,16 @@ export class iCloudFindMyService {
                 })
             }
         );
-        const json = await request.json();
-        const newDevices = new Map();
-        for (const device of json.content) {
-            newDevices.set(device.id, (this.devices.get(device.id) || new iCloudFindMyDevice(this)).apply(device));
-        }
-        this.devices = newDevices;
-        return json as iCloudFindMyResponse;
+        //const json = await request.json();
+		let json;
+		if ( [ 450, 451, 500 ].includes(request.status) ) {
+			return {success: false, responseStatus: request.status, json: null};
+		}
+		try {
+			json = await request.json();
+		} catch(err) {
+			throw new Error("Refresh failed with err " + err);
+		}
+        return {success: true, responseStatus: request.status, json: json}
     }
 }
