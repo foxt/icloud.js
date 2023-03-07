@@ -218,6 +218,47 @@ export class iCloudFindMyService {
         //this.refresh();
     }
     devices: Map<string, iCloudFindMyDevice> = new Map();
+	async alert( selectedDevice, subject = "iPhone Alert" ) {
+		let {success, json, responseStatus} = await this._alerter( selectedDevice, subject );
+		if ( [ 450, 451, 500 ].includes(responseStatus) ){
+			console.log("alert re-authenticating");
+			await this.service.authenticate();
+			await this.service.awaitReady;
+			({success, json, responseStatus} = await this._alerter( selectedDevice, subject ) );
+			if (!success) {
+				throw new Error("Alert failed with status " + responseStatus);
+				return null;
+			}
+		}
+		if (!success) {
+			throw new Error("Refresh failed with status " + responseStatus);
+		}
+		console.log("Alert sent to " + selectedDevice);
+	}
+	async _alerter( selectedDevice, subject ) {
+        const request = await fetch(
+            this.serviceUri + "/fmipservice/client/web/playSound",
+            {
+                headers: this.service.authStore.getHeaders(),
+                method: "POST",
+                body: JSON.stringify({
+                    device: selectedDevice,
+					subject: subject
+                })
+            }
+        );
+        //const json = await request.json();
+		let json;
+		if ( [ 450, 451, 500 ].includes(request.status) ) {
+			return {success: false, responseStatus: request.status, json: null};
+		}
+		try {
+			json = await request.json();
+		} catch(err) {
+			throw new Error("Alert failed with err " + err);
+		}
+        return {success: true, responseStatus: request.status, json: json}
+    }
 	async refresh(selectedDevice = "all") {
 		//Changed 6th March 2023 - davidcreager -   if refresh fails with status 450, reauthenticate and then refresh again
 		let {success, json, responseStatus} = await this._refreshRequester( selectedDevice );
