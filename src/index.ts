@@ -231,6 +231,7 @@ export default class iCloudService extends EventEmitter {
 
 
         this._setState(iCloudServiceStatus.Started);
+		let fetchError = null;
         try {
             const authData = { accountName: this.options.username, password: this.options.password, trustTokens: [] };
             if (this.authStore.trustToken) authData.trustTokens.push(this.authStore.trustToken);
@@ -240,24 +241,25 @@ export default class iCloudService extends EventEmitter {
                     this._setState(iCloudServiceStatus.Trusted);
                     await this._getiCloudCookies(); //Changed 6th March 2023 - davidcreager -   fixing reauthentication if refresh fails with status 450
                 } else {
-                    throw new Error("Unable to process auth response!");
+                    fetchError = new Error("Unable to process auth response!");
                 }
             } else if (authResponse.status == 409) {
                 if (this.authStore.processAuthSecrets(authResponse)) {
                     this._setState(iCloudServiceStatus.MfaRequested);
                 } else {
-                    throw new Error("Unable to process auth response!");
+                    fetchError = new Error("Unable to process auth response!");
                 }
             } else {
                 if (authResponse.status == 401) {
-                    throw new Error("Recieved 401 error. Incorrect password? (" + authResponse.status + ", " + await authResponse.text() + ")");
+                    fetchError = new Error("Recieved 401 error. Incorrect password? (" + authResponse.status + ", " + await authResponse.text() + ")");
                 }
-                throw new Error("Invalid status code: " + authResponse.status + ", " + await authResponse.text());
+                fetchError = Error("Invalid status code: " + authResponse.status + ", " + await authResponse.text());
             }
         } catch (e) {
             this._setState(iCloudServiceStatus.Error, e);
             throw e;
         }
+		if (fetchError) throw fetchError;
     }
 
     /**
