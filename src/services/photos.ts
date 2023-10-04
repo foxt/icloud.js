@@ -446,7 +446,9 @@ export class iCloudPhotosEndpointService {
             }
         );
 
-        return result.json();
+        const json = await result.json();
+        if (json.error) throw new Error(json.error + ": " + json.reason);
+        return json;
     }
 }
 
@@ -463,15 +465,9 @@ export class iCloudPhotosService {
         }
 
         const folders = (await this.endpointService.fetch<{records: Array<Folder>}>("/records/query", {
-            query: { recordType: "CheckIndexingState" },
-            zoneID: { zoneName: "PrimarySync" }
+            query: { recordType: "CPLAlbumByPositionLive" },
+            zoneID: { zoneName: "PrimarySync", zoneType: "REGULAR_CUSTOM_ZONE" }
         })).records;
-
-        if (folders[0].fields.state.value !== "FINISHED") {
-            throw new Error(
-                "iCloud Photo Library not finished indexing. Please try again in a few minutes."
-            );
-        }
 
         Object.entries(SMART_FOLDERS).map(([folderName, folderOptions]) => {
             this._albums.set(folderName, new iCloudPhotoAlbum(this.endpointService, folderName, folderOptions));
@@ -564,7 +560,7 @@ class iCloudPhotoAlbum {
                     },
                     ...this.album.query_filter
                 ],
-                recordType: this.album.list_type
+                recordType: this.album.obj_type
             },
             resultsLimit: this.pageSize * 2,
             desiredKeys: [
