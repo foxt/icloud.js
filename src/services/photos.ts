@@ -545,7 +545,7 @@ class iCloudPhotoAlbum {
                         },
                         comparator: "EQUALS"
                     },
-                    ...this.album.query_filter
+                    ...this.album.query_filter || []
                 ],
                 recordType: this.album.type
             },
