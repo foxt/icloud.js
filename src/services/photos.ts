@@ -463,9 +463,9 @@ export class iCloudPhotosService {
         }
 
         const folders = (await this.endpointService.fetch<{records: Array<Folder>}>("/records/query", {
-          query: { recordType: "CPLAlbumByPositionLive" },
-          zoneID: { zoneName: "PrimarySync", zoneType: "REGULAR_CUSTOM_ZONE" }
-      })).records;
+            query: { recordType: "CPLAlbumByPositionLive" },
+            zoneID: { zoneName: "PrimarySync", zoneType: "REGULAR_CUSTOM_ZONE" }
+        })).records;
 
         Object.entries(SMART_FOLDERS).map(([folderName, folderOptions]) => {
             this._albums.set(folderName, new iCloudPhotoAlbum(this.endpointService, folderName, folderOptions));
