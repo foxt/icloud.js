@@ -399,6 +399,39 @@ const SMART_FOLDERS = {
             }
         ]
     },
+    Portrait: {
+        type: "CPLAssetAndMasterInSmartAlbumByAssetDate",
+        direction: "ASCENDING",
+        query_filter: [
+            {
+                fieldName: "smartAlbum",
+                comparator: "EQUALS",
+                fieldValue: { type: "STRING", value: "DEPTH" }
+            }
+        ]
+    },
+    "Long Exposure": {
+        type: "CPLAssetAndMasterInSmartAlbumByAssetDate",
+        direction: "ASCENDING",
+        query_filter: [
+            {
+                fieldName: "smartAlbum",
+                comparator: "EQUALS",
+                fieldValue: { type: "STRING", value: "EXPOSURE" }
+            }
+        ]
+    },
+    Animated: {
+        type: "CPLAssetAndMasterInSmartAlbumByAssetDate",
+        direction: "ASCENDING",
+        query_filter: [
+            {
+                fieldName: "smartAlbum",
+                comparator: "EQUALS",
+                fieldValue: { type: "STRING", value: "ANIMATED" }
+            }
+        ]
+    },
     "Recently Deleted": {
         type: "CPLAssetAndMasterDeletedByExpungedDate",
         direction: "ASCENDING",
