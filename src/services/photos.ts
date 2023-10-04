@@ -7,8 +7,7 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 type Album = {
-    obj_type: string,
-    list_type: string,
+    type: string,
     direction: string,
     query_filter: Array<{
         fieldName: string,
@@ -314,14 +313,12 @@ interface QueryPhotoResponse {
 
 const SMART_FOLDERS = {
     "All Photos": {
-        obj_type: "CPLAssetByAddedDate",
-        list_type: "CPLAssetAndMasterByAddedDate",
+        type: "CPLAssetAndMasterByAssetDateWithoutHiddenOrDeleted",
         direction: "ASCENDING",
         query_filter: null
     },
     "Time-lapse": {
-        obj_type: "CPLAssetInSmartAlbumByAssetDate:Timelapse",
-        list_type: "CPLAssetAndMasterInSmartAlbumByAssetDate",
+        type: "CPLAssetAndMasterInSmartAlbumByAssetDate",
         direction: "ASCENDING",
         query_filter: [
             {
@@ -332,8 +329,7 @@ const SMART_FOLDERS = {
         ]
     },
     Videos: {
-        obj_type: "CPLAssetInSmartAlbumByAssetDate:Video",
-        list_type: "CPLAssetAndMasterInSmartAlbumByAssetDate",
+        type: "CPLAssetAndMasterInSmartAlbumByAssetDate",
         direction: "ASCENDING",
         query_filter: [
             {
@@ -344,8 +340,7 @@ const SMART_FOLDERS = {
         ]
     },
     "Slo-mo": {
-        obj_type: "CPLAssetInSmartAlbumByAssetDate:Slomo",
-        list_type: "CPLAssetAndMasterInSmartAlbumByAssetDate",
+        type: "CPLAssetAndMasterInSmartAlbumByAssetDate",
         direction: "ASCENDING",
         query_filter: [
             {
@@ -356,14 +351,12 @@ const SMART_FOLDERS = {
         ]
     },
     Bursts: {
-        obj_type: "CPLAssetBurstStackAssetByAssetDate",
-        list_type: "CPLBurstStackAssetAndMasterByAssetDate",
+        type: "CPLBurstStackAssetAndMasterByAssetDate",
         direction: "ASCENDING",
         query_filter: null
     },
     Favorites: {
-        obj_type: "CPLAssetInSmartAlbumByAssetDate:Favorite",
-        list_type: "CPLAssetAndMasterInSmartAlbumByAssetDate",
+        type: "CPLAssetAndMasterInSmartAlbumByAssetDate",
         direction: "ASCENDING",
         query_filter: [
             {
@@ -374,8 +367,7 @@ const SMART_FOLDERS = {
         ]
     },
     Panoramas: {
-        obj_type: "CPLAssetInSmartAlbumByAssetDate:Panorama",
-        list_type: "CPLAssetAndMasterInSmartAlbumByAssetDate",
+        type: "CPLAssetAndMasterInSmartAlbumByAssetDate",
         direction: "ASCENDING",
         query_filter: [
             {
@@ -386,8 +378,7 @@ const SMART_FOLDERS = {
         ]
     },
     Screenshots: {
-        obj_type: "CPLAssetInSmartAlbumByAssetDate:Screenshot",
-        list_type: "CPLAssetAndMasterInSmartAlbumByAssetDate",
+        type: "CPLAssetAndMasterInSmartAlbumByAssetDate",
         direction: "ASCENDING",
         query_filter: [
             {
@@ -398,8 +389,7 @@ const SMART_FOLDERS = {
         ]
     },
     Live: {
-        obj_type: "CPLAssetInSmartAlbumByAssetDate:Live",
-        list_type: "CPLAssetAndMasterInSmartAlbumByAssetDate",
+        type: "CPLAssetAndMasterInSmartAlbumByAssetDate",
         direction: "ASCENDING",
         query_filter: [
             {
@@ -410,14 +400,12 @@ const SMART_FOLDERS = {
         ]
     },
     "Recently Deleted": {
-        obj_type: "CPLAssetDeletedByExpungedDate",
-        list_type: "CPLAssetAndMasterDeletedByExpungedDate",
+        type: "CPLAssetAndMasterDeletedByExpungedDate",
         direction: "ASCENDING",
         query_filter: null
     },
     Hidden: {
-        obj_type: "CPLAssetHiddenByAssetDate",
-        list_type: "CPLAssetAndMasterHiddenByAssetDate",
+        type: "CPLAssetAndMasterHiddenByAssetDate",
         direction: "ASCENDING",
         query_filter: null
     }
@@ -483,8 +471,7 @@ export class iCloudPhotosService {
                 this.endpointService,
                 folderName,
                 {
-                    obj_type: "CPLContainerRelationLiveByAssetDate",
-                    list_type: `CPLContainerRelationNotDeletedByAssetDate${folder.recordName}`,
+                    type: "CPLContainerRelationLiveByAssetDate",
                     direction: "ASCENDING",
                     query_filter: [{
                         fieldName: "parentId",
@@ -522,7 +509,7 @@ class iCloudPhotoAlbum {
                         query: {
                             filterBy: {
                                 fieldName: "indexCountID",
-                                fieldValue: { type: "STRING_LIST", value: [this.album.obj_type] },
+                                fieldValue: { type: "STRING_LIST", value: [this.album.type] },
                                 comparator: "IN"
                             },
                             recordType: "HyperionIndexCountLookup"
@@ -560,7 +547,7 @@ class iCloudPhotoAlbum {
                     },
                     ...this.album.query_filter
                 ],
-                recordType: this.album.obj_type
+                recordType: this.album.type
             },
             resultsLimit: this.pageSize * 2,
             desiredKeys: [
