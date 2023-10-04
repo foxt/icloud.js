@@ -15,7 +15,7 @@ authenticate.then(async(icloud) => {
     console.log("Fetch photos");
     const photos = await album.getPhotos();
     console.log("Get your first photo from album");
-    const photo = photos.find((p) => pz.filename.endsWith(".JPG"));
+    const photo = photos.find((p) => p.filename.endsWith(".JPG"));
     console.log({
         id: photo.id,
         filename: photo.filename,
