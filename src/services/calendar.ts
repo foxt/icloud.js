@@ -133,8 +133,8 @@ export class iCloudCalendarService {
         this.calendarServiceUri = `${service.accountInfo.webservices.calendar.url}/ca`;
     }
     private async fetchEndpoint<T = any>(endpointUrl: string, params: Record<string, string>): Promise<T> {
-        const searchParams = new URLSearchParams(params);
-        const url = `${this.calendarServiceUri}${endpointUrl}?${searchParams}`;
+        const url = new URL(`${this.calendarServiceUri}${endpointUrl}`);
+        url.search = new URLSearchParams({ ...params, clientVersion: "5.1" }).toString();
 
         const response = await fetch(url, {
             headers: {
