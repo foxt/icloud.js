@@ -125,6 +125,7 @@ export class iCloudCalendarService {
     dsid: string;
     dateFormat = "YYYY-MM-DD";
     calendarServiceUri: string;
+    tz = dayjs.tz.guess() || "US/Pacific";
     constructor(service: iCloudService, serviceUri: string) {
         this.service = service;
         this.serviceUri = serviceUri;
@@ -147,7 +148,7 @@ export class iCloudCalendarService {
     async eventDetails(calendarGuid: string, eventGuid: string) {
         const response = await this.fetchEndpoint<iCloudCalendarEventDetailResponse>(`/eventdetail/${calendarGuid}/${eventGuid}`, {
             lang: "en-us",
-            usertz: dayjs.tz.guess(),
+            usertz: this.tz,
             dsid: this.dsid
         });
 
@@ -159,7 +160,7 @@ export class iCloudCalendarService {
             endDate: dayjs(to ?? dayjs().endOf("month")).format(this.dateFormat),
             dsid: this.dsid,
             lang: "en-us",
-            usertz: dayjs.tz.guess()
+            usertz: this.tz
         });
 
         return response.Event || [];
@@ -170,7 +171,7 @@ export class iCloudCalendarService {
             endDate: dayjs(dayjs().endOf("month")).format(this.dateFormat),
             dsid: this.dsid,
             lang: "en-us",
-            usertz: dayjs.tz.guess()
+            usertz: this.tz
         });
 
         return response.Collection || [];
