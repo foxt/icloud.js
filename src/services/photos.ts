@@ -446,7 +446,9 @@ export class iCloudPhotosEndpointService {
             }
         );
 
-        return result.json();
+        const json = await result.json();
+        if (json.error) throw new Error(json.error + ": " + json.reason);
+        return json;
     }
 }
 
