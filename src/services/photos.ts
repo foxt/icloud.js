@@ -558,7 +558,7 @@ class iCloudPhotoAlbum {
                     },
                     ...this.album.query_filter
                 ],
-                recordType: this.album.list_type
+                recordType: this.album.obj_type
             },
             resultsLimit: this.pageSize * 2,
             desiredKeys: [
