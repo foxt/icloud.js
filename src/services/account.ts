@@ -61,6 +61,9 @@ export interface iCloudFamilyInfo {
     status: number
     showAddMemberButton: boolean
 }
+/**
+ * iCloud Service that allows you to retrieve information about the devices and family members associated with the account.
+ */
 export class iCloudAccountDetailsService {
     service: iCloudService;
     serviceUri: string;
@@ -70,6 +73,11 @@ export class iCloudAccountDetailsService {
     }
 
     private _devices;
+    /**
+     * Retrieves a list of all devices associated with the account.
+     * @param refresh By default, the devices are cached forever. If you want to refresh the list, set this to true.
+     * @returns A list of devices associated with the account.
+     */
     async getDevices(refresh = false): Promise<iCloudDevices> {
         if (!refresh && this._devices) return this._devices;
         const response = await fetch(this.serviceUri + "/setup/web/device/getDevices", { headers: this.service.authStore.getHeaders() });
@@ -79,6 +87,11 @@ export class iCloudAccountDetailsService {
     }
 
     private _family;
+    /**
+     * Retrieves information about the family associated with the account.
+     * @param refresh  By default, the family information is cached forever. If you want to refresh the list, set this to true.
+     * @returns Information about the family associated with the account.
+     */
     async getFamily(refresh = false): Promise<iCloudFamilyInfo> {
         if (!refresh && this._family) return this._family;
         const response = await fetch(this.serviceUri + "/setup/web/family/getFamilyDetails", { headers: this.service.authStore.getHeaders() });

@@ -147,8 +147,8 @@ export default class iCloudService extends EventEmitter {
     status: iCloudServiceStatus = iCloudServiceStatus.NotStarted;
 
     /*
-        Has PCS (private/protected cloud service?) enabled.
-        The check is implemented by checking if the `isDeviceConsentedForPCS` key is present in the `requestWebAccessState` object.
+     *  Has PCS (private/protected cloud service?) enabled.
+     *  The check is implemented by checking if the `isDeviceConsentedForPCS` key is present in the `requestWebAccessState` object.
     */
     pcsEnabled?: boolean;
     /**
