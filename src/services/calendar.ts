@@ -125,7 +125,7 @@ export class iCloudCalendarService {
     dsid: string;
     dateFormat = "YYYY-MM-DD";
     calendarServiceUri: string;
-    tz = "UTC";
+    tz = dayjs.tz.guess() || "US/Pacific";
     constructor(service: iCloudService, serviceUri: string) {
         this.service = service;
         this.serviceUri = serviceUri;
