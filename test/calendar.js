@@ -7,4 +7,5 @@ authenticate.then(async(icloud) => {
     console.log(`You have ${calendars.length} calendars, and ${events.length} events`);
     const eventDetail = await calendarService.eventDetails(events[0].pGuid, events[0].guid);
     console.log(`Let's get first your event detail: ${eventDetail.title}`);
+    console.log(JSON.stringify(eventDetail, null, 4));
 });
