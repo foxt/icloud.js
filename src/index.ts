@@ -238,7 +238,7 @@ export default class iCloudService extends EventEmitter {
             if (authResponse.status == 200) {
                 if (this.authStore.processAuthSecrets(authResponse)) {
                     this._setState(iCloudServiceStatus.Trusted);
-                    this._getiCloudCookies();
+                    await this._getiCloudCookies(); //Changed 6th March 2023 - davidcreager -   fixing reauthentication if refresh fails with status 450
                 } else {
                     throw new Error("Unable to process auth response!");
                 }
