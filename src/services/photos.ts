@@ -481,9 +481,9 @@ export class iCloudPhotosService {
         this.endpointService = new iCloudPhotosEndpointService(serviceUri, service.authStore.getHeaders());
     }
     async getAlbums(): Promise<Map<string, iCloudPhotoAlbum>> {
-        if (this._albums.size > 0) {
+        if (this._albums.size > 0)
             return this._albums;
-        }
+
 
         const folders = (await this.endpointService.fetch<{records: Array<Folder>}>("/records/query", {
             query: { recordType: "CPLAlbumByPositionLive" },
@@ -686,9 +686,9 @@ class iCloudPhotoAlbum {
         };
     }
     async getPhotos(): Promise<Array<iCloudPhotoAsset>> {
-        if (this._photos.length) {
+        if (this._photos.length)
             return this._photos;
-        }
+
 
         const isDescending = this.album.direction === "DESCENDING";
         const total = await this.getLength();
@@ -718,11 +718,10 @@ class iCloudPhotoAlbum {
                 this._photos.push(new iCloudPhotoAsset(this.endpointService, record, assetRecords[record.recordName]));
             });
 
-            if (masterRecords.length > 0) {
+            if (masterRecords.length > 0)
                 offset += isDescending ? -masterRecords.length : masterRecords.length;
-            } else {
+            else
                 break;
-            }
         }
 
         return this._photos;
@@ -797,13 +796,13 @@ class iCloudPhotoAsset {
         return this._versions;
     }
     async download(version = "original") {
-        if (Object.keys(this._versions).length <= 0) {
+        if (Object.keys(this._versions).length <= 0)
             this.versions;
-        }
 
-        if (!(version in this._versions)) {
+
+        if (!(version in this._versions))
             return null;
-        }
+
 
         const response = await fetch(this.versions[version].url);
 

@@ -236,9 +236,9 @@ export class iCloudFindMyService {
         );
         const json = await request.json();
         const newDevices = new Map();
-        for (const device of json.content) {
+        for (const device of json.content)
             newDevices.set(device.id, (this.devices.get(device.id) || new iCloudFindMyDevice(this)).apply(device));
-        }
+
         this.devices = newDevices;
         return json as iCloudFindMyResponse;
     }
