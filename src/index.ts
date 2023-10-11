@@ -243,15 +243,14 @@ export default class iCloudService extends EventEmitter {
                     throw new Error("Unable to process auth response!");
                 }
             } else if (authResponse.status == 409) {
-                if (this.authStore.processAuthSecrets(authResponse)) {
+                if (this.authStore.processAuthSecrets(authResponse))
                     this._setState(iCloudServiceStatus.MfaRequested);
-                } else {
+                else
                     throw new Error("Unable to process auth response!");
-                }
             } else {
-                if (authResponse.status == 401) {
+                if (authResponse.status == 401)
                     throw new Error("Recieved 401 error. Incorrect password? (" + authResponse.status + ", " + await authResponse.text() + ")");
-                }
+
                 throw new Error("Invalid status code: " + authResponse.status + ", " + await authResponse.text());
             }
         } catch (e) {
@@ -269,9 +268,9 @@ export default class iCloudService extends EventEmitter {
         code = code.replace(/\D/g, "");
         if (code.length !== 6) console.warn("[icloud] Provided MFA wasn't 6-digits!");
 
-        if (!this.authStore.validateAuthSecrets()) {
+        if (!this.authStore.validateAuthSecrets())
             throw new Error("Cannot provide MFA code without calling authenticate first!");
-        }
+
         const authData = { securityCode: { code } };
         const authResponse = await fetch(
             AUTH_ENDPOINT + "verify/trusteddevice/securitycode",
@@ -287,19 +286,18 @@ export default class iCloudService extends EventEmitter {
     }
 
     private async _getTrustToken() {
-        if (!this.authStore.validateAuthSecrets()) {
+        if (!this.authStore.validateAuthSecrets())
             throw new Error("Cannot get auth token without calling authenticate first!");
-        }
+
         console.debug("[icloud] Trusting device");
         const authResponse = await fetch(
             AUTH_ENDPOINT + "2sv/trust",
             { headers: this.authStore.getMfaHeaders() }
         );
-        if (this.authStore.processAccountTokens(this.options.username, authResponse)) {
+        if (this.authStore.processAccountTokens(this.options.username, authResponse))
             this._setState(iCloudServiceStatus.Trusted);
-        } else {
+        else
             console.error("[icloud] Unable to trust device!");
-        }
     }
 
 
@@ -374,9 +372,8 @@ export default class iCloudService extends EventEmitter {
         if (!this.pcsAccess) {
             const requestPcs = await fetch("https://setup.icloud.com/setup/ws/1/enableDeviceConsentForPCS", { headers: this.authStore.getHeaders(), method: "POST" });
             const requestPcsJson = await requestPcs.json();
-            if (!requestPcsJson.isDeviceConsentNotificationSent) {
+            if (!requestPcsJson.isDeviceConsentNotificationSent)
                 throw new Error("Unable to request PCS access!");
-            }
         }
         while (!this.pcsAccess) {
             await sleep(5000);
@@ -449,12 +446,12 @@ export default class iCloudService extends EventEmitter {
      */
     getService(service:string) {
         if (!this.serviceConstructors[service]) throw new TypeError(`getService(service: string): 'service' was ${service.toString()}, must be one of ${Object.keys(this.serviceConstructors).join(", ")}`);
-        if (service === "photos") {
+        if (service === "photos")
             this._serviceCache[service] = new this.serviceConstructors[service](this, this.accountInfo.webservices.ckdatabasews.url);
-        }
-        if (!this._serviceCache[service]) {
+
+        if (!this._serviceCache[service])
             this._serviceCache[service] = new this.serviceConstructors[service](this, this.accountInfo.webservices[service].url);
-        }
+
         return this._serviceCache[service];
     }
 
