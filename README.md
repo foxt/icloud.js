@@ -23,7 +23,8 @@ const icloud = new iCloud({
     username: "johnny.appleseed@icloud.com",
     password: "hunter2",
     saveCredentials: true,
-    trustDevice: true
+    trustDevice: true,
+    authMethod: "srp"
 })
 await icloud.authenticate()
 console.log(icloud.status)
