@@ -2,8 +2,8 @@ import fs from "fs";
 import { Response } from "node-fetch";
 import path from "path";
 import { Cookie } from "tough-cookie";
-import { iCloudServiceSetupOptions } from ".";
-import { AUTH_HEADERS, DEFAULT_HEADERS } from "./consts";
+import { iCloudServiceSetupOptions } from "..";
+import { AUTH_HEADERS, DEFAULT_HEADERS } from "../consts";
 
 export class iCloudAuthenticationStore {
     /**
