@@ -4,6 +4,7 @@ import fetch from "node-fetch";
 import os from "os";
 import path from "path";
 import { iCloudAuthenticationStore } from "./auth/authStore";
+import { GSASRPAuthenticator } from "./auth/iCSRPAuthenticator.js";
 import { AUTH_ENDPOINT, AUTH_HEADERS, DEFAULT_HEADERS, SETUP_ENDPOINT } from "./consts";
 import { iCloudAccountDetailsService } from "./services/account";
 import { iCloudCalendarService } from "./services/calendar";
@@ -45,6 +46,13 @@ export interface iCloudServiceSetupOptions {
      * Defaults to the ~/.icloud directory.
      */
     dataDirectory?: string;
+
+    /**
+     * The authentication method to use.
+     * Currently defaults to 'legacy', however this may change in the future.
+     * @default "legacy"
+     */
+    authMethod?: "legacy" | "srp";
 }
 /**
  * The state of the iCloudService.
@@ -232,9 +240,28 @@ export default class iCloudService extends EventEmitter {
 
         this._setState(iCloudServiceStatus.Started);
         try {
-            const authData = { accountName: this.options.username, password: this.options.password, trustTokens: [] };
-            if (this.authStore.trustToken) authData.trustTokens.push(this.authStore.trustToken);
-            const authResponse = await fetch(AUTH_ENDPOINT + "signin?isRememberMeEnabled=true", { headers: AUTH_HEADERS, method: "POST", body: JSON.stringify(authData) });
+            let authEndpoint = "signin";
+            let authData = {
+                accountName: this.options.username,
+                trustTokens: this.authStore.trustToken ? [this.authStore.trustToken] : [],
+                rememberMe: this.options.saveCredentials
+            } as any;
+            if (this.options.authMethod === "srp") {
+                const authenticator = new GSASRPAuthenticator(username);
+                const initData = await authenticator.getInit();
+                const initResponse = await fetch(AUTH_ENDPOINT + "signin/init", {
+                    headers: AUTH_HEADERS, method: "POST", body: JSON.stringify(initData)
+                }).then((r) => r.json());
+                authData = {
+                    ...authData,
+                    ...(await authenticator.getComplete(password, initResponse))
+                };
+                authEndpoint = "signin/complete";
+            } else {
+                authData.password = this.options.password;
+            }
+
+            const authResponse = await fetch(AUTH_ENDPOINT + authEndpoint + "?isRememberMeEnabled=true", { headers: AUTH_HEADERS, method: "POST", body: JSON.stringify(authData) });
             if (authResponse.status == 200) {
                 if (this.authStore.processAuthSecrets(authResponse)) {
                     this._setState(iCloudServiceStatus.Trusted);
