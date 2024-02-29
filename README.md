@@ -18,8 +18,7 @@ Check the [examples](https://github.com/foxt/icloud.js/tree/master/test), or rea
 ### Basic example
 
 ```js
-const iCloud = require('icloud.js');
-const icloud = new iCloud({
+const { default: iCloud } = require('icloudjs');const icloud = new iCloud({
     username: "johnny.appleseed@icloud.com",
     password: "hunter2",
     saveCredentials: true,
