@@ -4,7 +4,11 @@
   "description": "Library for accessing iCloud in Node.js",
   "main": "build/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "lint": "eslint src",
+    "docs": "typedoc src/index.ts src/services/* --customCss docs.css --darkHighlightTheme one-dark-pro --lightHighlightTheme one-dark-pro"
+
   },
   "repository": {
     "type": "git",
@@ -20,7 +24,7 @@
   },
   "homepage": "https://github.com/foxt/icloud.js#readme",
   "dependencies": {
-    "@foxt/js-srp": "^0.0.3-patch1",
+    "@foxt/js-srp": "^0.0.3-patch2",
     "dayjs": "^1.11.6",
     "node-fetch": "^2.6.7",
     "tough-cookie": "^4.0.0"
