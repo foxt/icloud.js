@@ -243,3 +243,4 @@ export class iCloudFindMyService {
         return json as iCloudFindMyResponse;
     }
 }
+export type { iCloudFindMyDeviceInfo, iCloudFindMyResponse };

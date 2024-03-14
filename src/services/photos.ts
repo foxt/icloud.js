@@ -832,3 +832,4 @@ class iCloudPhotoAsset {
         }
     }
 }
+export type { Album, AssetRecord, Folder, MasterRecord, QueryPhotoResponse, UnknownRecord, iCloudPhotoAlbum, iCloudPhotoAsset };

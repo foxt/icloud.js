@@ -177,3 +177,4 @@ export class iCloudCalendarService {
         return response.Collection || [];
     }
 }
+export type { iCloudCalendarAlarm, iCloudCalendarCollection, iCloudCalendarEvent, iCloudCalendarEventDetailResponse, iCloudCalendarEventsResponse, iCloudCalendarInvitee, iCloudCalendarRecurrence, iCloudCalendarStartupResponse };
