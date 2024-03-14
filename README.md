@@ -18,7 +18,12 @@ Check the [examples](https://github.com/foxt/icloud.js/tree/master/test), or rea
 ### Basic example
 
 ```js
+// for TypeScript, use:
+import iCloud from "icloudjs";
+// for JavaScript, use:
 const { default: iCloud } = require('icloudjs');
+
+
 const icloud = new iCloud({
     username: "johnny.appleseed@icloud.com",
     password: "hunter2",
