@@ -2,14 +2,16 @@ import fs from "fs";
 import { Response } from "node-fetch";
 import path from "path";
 import { Cookie } from "tough-cookie";
-import { iCloudServiceSetupOptions } from "..";
+import type iCloudService from "..";
 import { AUTH_HEADERS, DEFAULT_HEADERS } from "../consts";
+import { LogLevel } from "../index.js";
 
 export class iCloudAuthenticationStore {
     /**
      * The options provided to the iCloudService that owns this AuthenticationStore
      */
-    options: iCloudServiceSetupOptions;
+    options: iCloudService["options"];
+    log: iCloudService["log"];
     /**
      * The exact file path to the base file name of the trust token file.
      * @default "~/.icloud/.trust-token"
@@ -25,9 +27,9 @@ export class iCloudAuthenticationStore {
     aasp?: string;
     icloudCookies: Cookie[];
 
-    constructor(options: iCloudServiceSetupOptions) {
-        this.options = options;
-        this.tknFile = path.format({ dir: options.dataDirectory, base: ".trust-token" });
+    constructor(service: iCloudService) {
+        this.options = service.options;
+        this.tknFile = path.format({ dir: this.options.dataDirectory, base: ".trust-token" });
 
         Object.defineProperty(this, "trustToken", { enumerable: false });
         Object.defineProperty(this, "sessionId", { enumerable: false });
@@ -45,7 +47,7 @@ export class iCloudAuthenticationStore {
         try {
             this.trustToken = fs.readFileSync(this.tknFile + "-" + Buffer.from(account.toLowerCase()).toString("base64"), "utf8");
         } catch (e) {
-            console.debug("[icloud] Unable to load trust token:", e.toString());
+            this.log(LogLevel.Error, "Unable to load trust token:", e.toString());
         }
     }
     /**
@@ -57,7 +59,7 @@ export class iCloudAuthenticationStore {
             if (!fs.existsSync(this.options.dataDirectory)) fs.mkdirSync(this.options.dataDirectory);
             require("fs").writeFileSync(this.tknFile + "-" + Buffer.from(account.toLowerCase()).toString("base64"), this.trustToken);
         } catch (e) {
-            console.warn("[icloud] Unable to write trust token:", e.toString());
+            this.log(LogLevel.Warning, "Unable to write trust token:", e.toString());
         }
     }
 
@@ -73,13 +75,14 @@ export class iCloudAuthenticationStore {
             this.sessionId = authResponse.headers.get("X-Apple-Session-Token");
             this.sessionToken = this.sessionId;
             this.scnt = authResponse.headers.get("scnt");
+            console.log(authResponse.headers);
 
             const headers = Array.from(authResponse.headers.values());
             const aaspCookie = headers.find((v) => v.includes("aasp="));
             this.aasp = aaspCookie.split("aasp=")[1].split(";")[0];
             return this.validateAuthSecrets();
         } catch (e) {
-            console.warn("[icloud] Unable to process auth secrets:", e.toString());
+            this.log(LogLevel.Warning, "Unable to process auth secrets:", e.toString());
             return false;
         }
     }

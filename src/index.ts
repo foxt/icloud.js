@@ -16,6 +16,14 @@ import { AccountInfo } from "./types";
 
 export type { iCloudAuthenticationStore } from "./auth/authStore";
 export type { AccountInfo } from "./types";
+export const LogLevel = {
+    Debug: 0,
+    Info: 1,
+    Warning: 2,
+    Error: 3,
+
+    Silent: Infinity
+};
 
 /**
  * These are the options that can be passed to the iCloud service constructor.
@@ -53,6 +61,13 @@ export interface iCloudServiceSetupOptions {
      * @default "legacy"
      */
     authMethod?: "legacy" | "srp";
+
+
+    /**
+     * Log level to use. Alternatively pass in a function that will recieve all log messages instead of being forwarded to console
+     * @default LogLevel.Debug
+     */
+    logger?: keyof typeof LogLevel | ((level: (typeof LogLevel)[keyof typeof LogLevel], ...args: any[]) => void);
 }
 /**
  * The state of the iCloudService.
@@ -184,12 +199,25 @@ export default class iCloudService extends EventEmitter {
         super();
         this.options = options;
         if (!this.options.dataDirectory) this.options.dataDirectory = path.join(os.homedir(), ".icloud");
-        this.authStore = new iCloudAuthenticationStore(options);
+        this.authStore = new iCloudAuthenticationStore(this);
+    }
+    private log(level: number, ...args: any[]) {
+        if (typeof this.options.logger === "function") {
+            this.options.logger(level, ...args);
+        } else {
+            if (LogLevel[this.options.logger || "Debug"] > level) return;
+            args.unshift("[icloud]");
+            if (level === LogLevel.Debug) console.debug(...args);
+            else if (level === LogLevel.Info) console.info(...args);
+            else if (level === LogLevel.Warning) console.warn(...args);
+            else if (level === LogLevel.Error) console.error(...args);
+        }
     }
 
     private _setState(state: iCloudServiceStatus, ...args: any[]) {
-        console.debug("[icloud] State changed to:", state);
+        this.log(LogLevel.Debug, "State changed to:", state);
         this.status = state;
+
         this.emit(state, ...args);
     }
 
@@ -209,7 +237,7 @@ export default class iCloudService extends EventEmitter {
                 const saved = (await require("keytar").findCredentials("https://idmsa.apple.com"))[0];
                 if (!saved) throw new Error("Username was not provided and could not be found in keychain");
                 username = saved.account;
-                console.debug("[icloud] Username found in keychain:", username);
+                this.log(LogLevel.Debug, "Username found in keychain:", username);
             } catch (e) {
                 throw new Error("Username was not provided, and unable to use Keytar to find saved credentials" + e.toString());
             }
@@ -270,6 +298,7 @@ export default class iCloudService extends EventEmitter {
                     throw new Error("Unable to process auth response!");
                 }
             } else if (authResponse.status == 409) {
+                console.log(await authResponse.text());
                 if (this.authStore.processAuthSecrets(authResponse))
                     this._setState(iCloudServiceStatus.MfaRequested);
                 else
@@ -293,7 +322,7 @@ export default class iCloudService extends EventEmitter {
     async provideMfaCode(code: string) {
         if (typeof (code as any) !== "string") throw new TypeError("provideMfaCode(code: string): 'code' was " + code.toString());
         code = code.replace(/\D/g, "");
-        if (code.length !== 6) console.warn("[icloud] Provided MFA wasn't 6-digits!");
+        if (code.length !== 6) this.log(LogLevel.Warning, "Provided MFA wasn't 6-digits!");
 
         if (!this.authStore.validateAuthSecrets())
             throw new Error("Cannot provide MFA code without calling authenticate first!");
@@ -316,7 +345,7 @@ export default class iCloudService extends EventEmitter {
         if (!this.authStore.validateAuthSecrets())
             throw new Error("Cannot get auth token without calling authenticate first!");
 
-        console.debug("[icloud] Trusting device");
+        this.log(LogLevel.Warning, "Trusting device");
         const authResponse = await fetch(
             AUTH_ENDPOINT + "2sv/trust",
             { headers: this.authStore.getMfaHeaders() }
@@ -324,7 +353,7 @@ export default class iCloudService extends EventEmitter {
         if (this.authStore.processAccountTokens(this.options.username, authResponse))
             this._setState(iCloudServiceStatus.Trusted);
         else
-            console.error("[icloud] Unable to trust device!");
+            this.log(LogLevel.Error, "Unable to trust device!");
     }
 
 
@@ -340,13 +369,13 @@ export default class iCloudService extends EventEmitter {
                     try {
                         this.accountInfo = await response.json();
                     } catch (e) {
-                        console.warn("[icloud] Could not get account info:", e);
+                        this.log(LogLevel.Warning, "Could not get account info:", e);
                     }
 
                     try {
                         await this.checkPCS();
                     } catch (e) {
-                        console.warn("[icloud] Could not get PCS state:", e);
+                        this.log(LogLevel.Warning, "Could not get PCS state:", e);
                     }
 
 
@@ -354,7 +383,7 @@ export default class iCloudService extends EventEmitter {
                     try {
                         if (this.options.saveCredentials) require("keytar").setPassword("https://idmsa.apple.com", this.options.username, this.options.password);
                     } catch (e) {
-                        console.warn("[icloud] Unable to save account credentials:", e);
+                        this.log(LogLevel.Warning, "Unable to save account credentials:", e);
                     }
                 } else {
                     throw new Error("Unable to process cloud setup response!");
@@ -393,7 +422,7 @@ export default class iCloudService extends EventEmitter {
     async requestServiceAccess(appName: "iclouddrive") {
         await this.checkPCS();
         if (!this.ICDRSDisabled) {
-            console.warn("[icloud] requestServiceAccess: ICRS is not disabled.");
+            this.log(LogLevel.Warning, "requestServiceAccess: ICRS is not disabled.");
             return true;
         }
         if (!this.pcsAccess) {
@@ -418,7 +447,7 @@ export default class iCloudService extends EventEmitter {
                     await sleep(5000);
                     break;
                 default:
-                    console.error("[icloud] unknown PCS request state", pcsJson);
+                    this.log(LogLevel.Error, "unknown PCS request state", pcsJson);
                 }
                 pcsRequest = await fetch("https://setup.icloud.com/setup/ws/1/requestPCS", { headers: this.authStore.getHeaders(), method: "POST", body: JSON.stringify({ appName, derivedFromUserAction: false }) });
                 pcsJson = await pcsRequest.json();
