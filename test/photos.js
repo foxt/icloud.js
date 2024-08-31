@@ -5,12 +5,17 @@ const { writeFile } = require("fs/promises");
 authenticate.then(async(icloud) => {
     const photosService = icloud.getService("photos");
     const albums = await photosService.getAlbums();
-    console.log("All your album names: ", Array.from(albums.keys()).join(", "));
+    console.log("All your album names: ");
+    for (let [name, album] of albums) {
+        console.log(" - " + name);
+        if (album.isFolder)
+            console.log("Children: " + [...(await album.getChildren()).keys()].join());
+    }
     console.log("Get your 'Favorites' album");
     const album = albums.get("Favorites");
-    if (!album) {
+    if (!album)
         return console.log("Cannot find 'Favorites' album");
-    }
+
     console.log(`It contains ${await album.getLength()} photos`);
     console.log("Fetch photos");
     const photos = await album.getPhotos();

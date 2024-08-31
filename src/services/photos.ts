@@ -6,299 +6,299 @@ import iCloudService from "..";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-type Album = {
-    type: string,
-    direction: string,
-    query_filter: Array<{
-        fieldName: string,
-        comparator: string,
-        fieldValue: {
-            type: string,
-            value: unknown
-        }
-    }> | null
+type AlbumFilter = {
+	type: string,
+	direction: string,
+	query_filter: Array<{
+		fieldName: string,
+		comparator: string,
+		fieldValue: {
+			type: string,
+			value: unknown
+		}
+	}> | null
 }
 
 interface Folder {
-    recordName: string
-    recordType: string
-    fields: Record<string, {value: unknown, type: string}>
-    pluginFields: Record<string, unknown>
-    recordChangeTag: string
-    created: {
-        timestamp: number
-        userRecordName: string
-        deviceID: string
-    }
-    modified: {
-        timestamp: number
-        userRecordName: string
-        deviceID: string
-    }
-    deleted: boolean
-    zoneID: {
-        zoneName: string
-        ownerRecordName: string
-        zoneType: string
-    }
+	recordName: string
+	recordType: string
+	fields: Record<string, {value: unknown, type: string}>
+	pluginFields: Record<string, unknown>
+	recordChangeTag: string
+	created: {
+		timestamp: number
+		userRecordName: string
+		deviceID: string
+	}
+	modified: {
+		timestamp: number
+		userRecordName: string
+		deviceID: string
+	}
+	deleted: boolean
+	zoneID: {
+		zoneName: string
+		ownerRecordName: string
+		zoneType: string
+	}
 }
 
 interface UnknownRecord {
   recordName: string
   recordType: string
   fields: {
-    itemType?: {
-      value: string
-      type: string
-    }
-    resJPEGThumbFingerprint?: {
-      value: string
-      type: string
-    }
-    filenameEnc?: {
-      value: string
-      type: string
-    }
-    resJPEGMedRes?: {
-      value: {
-        fileChecksum: string
-        size: number
-        wrappingKey: string
-        referenceChecksum: string
-        downloadURL: string
-      }
-      type: string
-    }
-    originalOrientation?: {
-      value: number
-      type: string
-    }
-    resJPEGMedHeight?: {
-      value: number
-      type: string
-    }
-    resOriginalRes?: {
-      value: {
-        fileChecksum: string
-        size: number
-        wrappingKey: string
-        referenceChecksum: string
-        downloadURL: string
-      }
-      type: string
-    }
-    resJPEGMedFileType?: {
-      value: string
-      type: string
-    }
-    resJPEGThumbHeight?: {
-      value: number
-      type: string
-    }
-    resJPEGThumbWidth?: {
-      value: number
-      type: string
-    }
-    resOriginalWidth?: {
-      value: number
-      type: string
-    }
-    resJPEGThumbFileType?: {
-      value: string
-      type: string
-    }
-    dataClassType?: {
-      value: number
-      type: string
-    }
-    resOriginalFingerprint?: {
-      value: string
-      type: string
-    }
-    resJPEGMedWidth?: {
-      value: number
-      type: string
-    }
-    resJPEGThumbRes?: {
-      value: {
-        fileChecksum: string
-        size: number
-        wrappingKey: string
-        referenceChecksum: string
-        downloadURL: string
-      }
-      type: string
-    }
-    resOriginalFileType?: {
-      value: string
-      type: string
-    }
-    resOriginalHeight?: {
-      value: number
-      type: string
-    }
-    resJPEGMedFingerprint?: {
-      value: string
-      type: string
-    }
-    resVidSmallHeight?: {
-      value: number
-      type: string
-    }
-    resVidMedFileType?: {
-      value: string
-      type: string
-    }
-    resVidMedRes?: {
-      value: {
-        fileChecksum: string
-        size: number
-        wrappingKey: string
-        referenceChecksum: string
-        downloadURL: string
-      }
-      type: string
-    }
-    resVidSmallFingerprint?: {
-      value: string
-      type: string
-    }
-    resVidMedWidth?: {
-      value: number
-      type: string
-    }
-    resVidSmallFileType?: {
-      value: string
-      type: string
-    }
-    resVidSmallRes?: {
-      value: {
-        fileChecksum: string
-        size: number
-        wrappingKey: string
-        referenceChecksum: string
-        downloadURL: string
-      }
-      type: string
-    }
-    resVidMedFingerprint?: {
-      value: string
-      type: string
-    }
-    resVidMedHeight?: {
-      value: number
-      type: string
-    }
-    resVidSmallWidth?: {
-      value: number
-      type: string
-    }
-    assetDate?: {
-      value: number
-      type: string
-    }
-    orientation?: {
-      value: number
-      type: string
-    }
-    addedDate?: {
-      value: number
-      type: string
-    }
-    assetSubtypeV2?: {
-      value: number
-      type: string
-    }
-    assetHDRType?: {
-      value: number
-      type: string
-    }
-    timeZoneOffset?: {
-      value: number
-      type: string
-    }
-    masterRef?: {
-      value: {
-        recordName: string
-        action: string
-        zoneID: {
-          zoneName: string
-          ownerRecordName: string
-          zoneType: string
-        }
-      }
-      type: string
-    }
-    adjustmentRenderType?: {
-      value: number
-      type: string
-    }
-    vidComplDispScale?: {
-      value: number
-      type: string
-    }
-    isHidden?: {
-      value: number
-      type: string
-    }
-    duration?: {
-      value: number
-      type: string
-    }
-    burstFlags?: {
-      value: number
-      type: string
-    }
-    assetSubtype?: {
-      value: number
-      type: string
-    }
-    vidComplDurScale?: {
-      value: number
-      type: string
-    }
-    vidComplDurValue?: {
-      value: number
-      type: string
-    }
-    vidComplVisibilityState?: {
-      value: number
-      type: string
-    }
-    customRenderedValue?: {
-      value: number
-      type: string
-    }
-    isFavorite?: {
-      value: number
-      type: string
-    }
-    vidComplDispValue?: {
-      value: number
-      type: string
-    }
-    adjustmentType?: {
-      value: string
-      type: string
-    }
+	itemType?: {
+	  value: string
+	  type: string
+	}
+	resJPEGThumbFingerprint?: {
+	  value: string
+	  type: string
+	}
+	filenameEnc?: {
+	  value: string
+	  type: string
+	}
+	resJPEGMedRes?: {
+	  value: {
+		fileChecksum: string
+		size: number
+		wrappingKey: string
+		referenceChecksum: string
+		downloadURL: string
+	  }
+	  type: string
+	}
+	originalOrientation?: {
+	  value: number
+	  type: string
+	}
+	resJPEGMedHeight?: {
+	  value: number
+	  type: string
+	}
+	resOriginalRes?: {
+	  value: {
+		fileChecksum: string
+		size: number
+		wrappingKey: string
+		referenceChecksum: string
+		downloadURL: string
+	  }
+	  type: string
+	}
+	resJPEGMedFileType?: {
+	  value: string
+	  type: string
+	}
+	resJPEGThumbHeight?: {
+	  value: number
+	  type: string
+	}
+	resJPEGThumbWidth?: {
+	  value: number
+	  type: string
+	}
+	resOriginalWidth?: {
+	  value: number
+	  type: string
+	}
+	resJPEGThumbFileType?: {
+	  value: string
+	  type: string
+	}
+	dataClassType?: {
+	  value: number
+	  type: string
+	}
+	resOriginalFingerprint?: {
+	  value: string
+	  type: string
+	}
+	resJPEGMedWidth?: {
+	  value: number
+	  type: string
+	}
+	resJPEGThumbRes?: {
+	  value: {
+		fileChecksum: string
+		size: number
+		wrappingKey: string
+		referenceChecksum: string
+		downloadURL: string
+	  }
+	  type: string
+	}
+	resOriginalFileType?: {
+	  value: string
+	  type: string
+	}
+	resOriginalHeight?: {
+	  value: number
+	  type: string
+	}
+	resJPEGMedFingerprint?: {
+	  value: string
+	  type: string
+	}
+	resVidSmallHeight?: {
+	  value: number
+	  type: string
+	}
+	resVidMedFileType?: {
+	  value: string
+	  type: string
+	}
+	resVidMedRes?: {
+	  value: {
+		fileChecksum: string
+		size: number
+		wrappingKey: string
+		referenceChecksum: string
+		downloadURL: string
+	  }
+	  type: string
+	}
+	resVidSmallFingerprint?: {
+	  value: string
+	  type: string
+	}
+	resVidMedWidth?: {
+	  value: number
+	  type: string
+	}
+	resVidSmallFileType?: {
+	  value: string
+	  type: string
+	}
+	resVidSmallRes?: {
+	  value: {
+		fileChecksum: string
+		size: number
+		wrappingKey: string
+		referenceChecksum: string
+		downloadURL: string
+	  }
+	  type: string
+	}
+	resVidMedFingerprint?: {
+	  value: string
+	  type: string
+	}
+	resVidMedHeight?: {
+	  value: number
+	  type: string
+	}
+	resVidSmallWidth?: {
+	  value: number
+	  type: string
+	}
+	assetDate?: {
+	  value: number
+	  type: string
+	}
+	orientation?: {
+	  value: number
+	  type: string
+	}
+	addedDate?: {
+	  value: number
+	  type: string
+	}
+	assetSubtypeV2?: {
+	  value: number
+	  type: string
+	}
+	assetHDRType?: {
+	  value: number
+	  type: string
+	}
+	timeZoneOffset?: {
+	  value: number
+	  type: string
+	}
+	masterRef?: {
+	  value: {
+		recordName: string
+		action: string
+		zoneID: {
+		  zoneName: string
+		  ownerRecordName: string
+		  zoneType: string
+		}
+	  }
+	  type: string
+	}
+	adjustmentRenderType?: {
+	  value: number
+	  type: string
+	}
+	vidComplDispScale?: {
+	  value: number
+	  type: string
+	}
+	isHidden?: {
+	  value: number
+	  type: string
+	}
+	duration?: {
+	  value: number
+	  type: string
+	}
+	burstFlags?: {
+	  value: number
+	  type: string
+	}
+	assetSubtype?: {
+	  value: number
+	  type: string
+	}
+	vidComplDurScale?: {
+	  value: number
+	  type: string
+	}
+	vidComplDurValue?: {
+	  value: number
+	  type: string
+	}
+	vidComplVisibilityState?: {
+	  value: number
+	  type: string
+	}
+	customRenderedValue?: {
+	  value: number
+	  type: string
+	}
+	isFavorite?: {
+	  value: number
+	  type: string
+	}
+	vidComplDispValue?: {
+	  value: number
+	  type: string
+	}
+	adjustmentType?: {
+	  value: string
+	  type: string
+	}
   }
   pluginFields: Record<any, any>
   recordChangeTag: string
   created: {
-    timestamp: number
-    userRecordName: string
-    deviceID: string
+	timestamp: number
+	userRecordName: string
+	deviceID: string
   }
   modified: {
-    timestamp: number
-    userRecordName: string
-    deviceID: string
+	timestamp: number
+	userRecordName: string
+	deviceID: string
   }
   deleted: boolean
   zoneID: {
-    zoneName: string
-    ownerRecordName: string
-    zoneType: string
+	zoneName: string
+	ownerRecordName: string
+	zoneType: string
   }
 }
 
@@ -306,9 +306,9 @@ type MasterRecord = UnknownRecord & {recordType: "CPLMaster"}
 type AssetRecord = UnknownRecord & {recordType: "CPLAsset"}
 
 interface QueryPhotoResponse {
-    records: Array<MasterRecord | AssetRecord>
-    continuationMarker: string
-    syncToken: string
+	records: Array<MasterRecord | AssetRecord>
+	continuationMarker: string
+	syncToken: string
 }
 
 const SMART_FOLDERS = {
@@ -473,6 +473,30 @@ export class iCloudPhotosEndpointService {
     }
 }
 
+function albumsFrom(svc: iCloudPhotosEndpointService, folders: Folder[]) {
+    return folders.filter((folder) => {
+        if (!("albumNameEnc" in folder.fields)) return false;
+        if (folder.recordName === "----Root-Folder----" || folder.fields.isDeleted?.value) return false;
+        return true;
+    }).map((folder) => {
+        const folderName = Buffer.from(folder.fields.albumNameEnc.value as string, "base64").toString("utf-8");
+        return [folderName, new iCloudPhotoAlbum(
+            svc,
+            folderName,
+            {
+                type: "CPLContainerRelationLiveByAssetDate",
+                direction: "ASCENDING",
+                query_filter: [{
+                    fieldName: "parentId",
+                    comparator: "EQUALS",
+                    fieldValue: { type: "STRING", value: folder.recordName }
+                }]
+            },
+            folder.fields.albumType?.value === 3
+
+        )] as const;
+    });
+}
 
 export class iCloudPhotosService {
     private endpointService: iCloudPhotosEndpointService;
@@ -491,28 +515,11 @@ export class iCloudPhotosService {
         })).records;
 
         Object.entries(SMART_FOLDERS).map(([folderName, folderOptions]) => {
-            this._albums.set(folderName, new iCloudPhotoAlbum(this.endpointService, folderName, folderOptions));
+            this._albums.set(folderName, new iCloudPhotoAlbum(this.endpointService, folderName, folderOptions, false));
         });
 
-        folders.map((folder) => {
-            if (!("albumNameEnc" in folder.fields)) return;
-            if (folder.recordName === "----Root-Folder----" || folder.fields.isDeleted?.value) return;
-
-            const folderName = Buffer.from(folder.fields.albumNameEnc.value as string, "base64").toString("utf-8");
-
-            this._albums.set(folderName, new iCloudPhotoAlbum(
-                this.endpointService,
-                folderName,
-                {
-                    type: "CPLContainerRelationLiveByAssetDate",
-                    direction: "ASCENDING",
-                    query_filter: [{
-                        fieldName: "parentId",
-                        comparator: "EQUALS",
-                        fieldValue: { type: "STRING", value: folder.recordName }
-                    }]
-                }
-            ));
+        albumsFrom(this.endpointService, folders).forEach(([folderName, album]) => {
+            this._albums.set(folderName, album);
         });
 
         return this._albums;
@@ -526,10 +533,11 @@ class iCloudPhotoAlbum {
     private _photos: Array<iCloudPhotoAsset> = [];
     /* eslint-disable no-useless-constructor, no-empty-function */
     constructor(
-        private endpointService: iCloudPhotosEndpointService,
-        private name: string,
-        private album: Album | null,
-        private pageSize = 100
+		private endpointService: iCloudPhotosEndpointService,
+		private name: string,
+		private query: AlbumFilter | null,
+		public readonly isFolder: boolean,
+		private pageSize = 100
     ) {}
     /* eslint-enable no-useless-constructor, no-empty-function */
     get title(): string { return this.name; }
@@ -542,7 +550,7 @@ class iCloudPhotoAlbum {
                         query: {
                             filterBy: {
                                 fieldName: "indexCountID",
-                                fieldValue: { type: "STRING_LIST", value: [this.album.type] },
+                                fieldValue: { type: "STRING_LIST", value: [this.query.type] },
                                 comparator: "IN"
                             },
                             recordType: "HyperionIndexCountLookup"
@@ -574,13 +582,13 @@ class iCloudPhotoAlbum {
                         fieldName: "direction",
                         fieldValue: {
                             type: "STRING",
-                            value: this.album.direction
+                            value: this.query.direction
                         },
                         comparator: "EQUALS"
                     },
-                    ...this.album.query_filter || []
+                    ...this.query.query_filter || []
                 ],
-                recordType: this.album.type
+                recordType: this.query.type
             },
             resultsLimit: this.pageSize * 2,
             desiredKeys: [
@@ -690,7 +698,7 @@ class iCloudPhotoAlbum {
             return this._photos;
 
 
-        const isDescending = this.album.direction === "DESCENDING";
+        const isDescending = this.query.direction === "DESCENDING";
         const total = await this.getLength();
         let offset = isDescending ? total - 1 : 0;
 
@@ -725,6 +733,25 @@ class iCloudPhotoAlbum {
         }
 
         return this._photos;
+    }
+    private _children: Map<string, iCloudPhotoAlbum> = new Map();
+    async getChildren(): Promise<Map<string, iCloudPhotoAlbum>> {
+        if (this._children.size > 0)
+            return this._children;
+
+
+        const folders = (await this.endpointService.fetch<{records: Array<Folder>}>("/records/query", {
+            query: { recordType: "CPLAlbumByPositionLive",
+                filterBy: this.query.query_filter
+            },
+            zoneID: { zoneName: "PrimarySync", zoneType: "REGULAR_CUSTOM_ZONE" }
+        })).records;
+
+        albumsFrom(this.endpointService, folders).forEach(([folderName, album]) => {
+            this._children.set(folderName, album);
+        });
+
+        return this._children;
     }
 }
 
@@ -763,8 +790,8 @@ class iCloudPhotoAsset {
         return dayjs(this.assetRecord.fields.addedDate.value).local().toDate();
     }
     /**
-     * @returns array [width, height] in pixels
-     */
+	 * @returns array [width, height] in pixels
+	 */
     get dimension() {
         return [
             this.masterRecord.fields.resOriginalWidth.value,
@@ -774,9 +801,9 @@ class iCloudPhotoAsset {
     get versions() {
         if (Object.keys(this._versions).length <= 0) {
             const typedVersionLookup =
-              "resVidSmallRes" in this.masterRecord.fields ?
-                  this.VIDEO_VERSION_LOOKUP :
-                  this.PHOTO_VERSION_LOOKUP;
+			  "resVidSmallRes" in this.masterRecord.fields ?
+				  this.VIDEO_VERSION_LOOKUP :
+				  this.PHOTO_VERSION_LOOKUP;
 
             Object.entries(typedVersionLookup).map(([key, prefix]) => {
                 if (`${prefix}Res` in this.masterRecord.fields) {
@@ -832,4 +859,5 @@ class iCloudPhotoAsset {
         }
     }
 }
-export type { Album, AssetRecord, Folder, MasterRecord, QueryPhotoResponse, UnknownRecord, iCloudPhotoAlbum, iCloudPhotoAsset };
+export type { AlbumFilter as Album, AssetRecord, Folder, iCloudPhotoAlbum, iCloudPhotoAsset, MasterRecord, QueryPhotoResponse, UnknownRecord };
+
