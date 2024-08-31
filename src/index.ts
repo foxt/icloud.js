@@ -298,7 +298,6 @@ export default class iCloudService extends EventEmitter {
                     throw new Error("Unable to process auth response!");
                 }
             } else if (authResponse.status == 409) {
-                console.log(await authResponse.text());
                 if (this.authStore.processAuthSecrets(authResponse))
                     this._setState(iCloudServiceStatus.MfaRequested);
                 else

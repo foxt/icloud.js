@@ -75,7 +75,6 @@ export class iCloudAuthenticationStore {
             this.sessionId = authResponse.headers.get("X-Apple-Session-Token");
             this.sessionToken = this.sessionId;
             this.scnt = authResponse.headers.get("scnt");
-            console.log(authResponse.headers);
 
             const headers = Array.from(authResponse.headers.values());
             const aaspCookie = headers.find((v) => v.includes("aasp="));
