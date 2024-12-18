@@ -35,9 +35,9 @@ export class GSASRPAuthenticator {
 
 
     private async derivePassword(protocol: "s2k" | "s2k_fo", password: string, salt: Uint8Array, iterations: number) {
-        let passHash = new Uint8Array(await util.hash(srp.h, stringToU8Array(password)));
+        let passHash = new Uint8Array(await util.hash(srp.h, stringToU8Array(password).buffer as ArrayBuffer));
         if (protocol == "s2k_fo")
-            passHash = stringToU8Array(util.toHex(passHash));
+            passHash = stringToU8Array(util.toHex(passHash)) as Uint8Array<ArrayBuffer>;
 
 
         const imported = await crypto.subtle.importKey(

@@ -33,7 +33,7 @@
     "keytar": "^7.9.0"
   },
   "devDependencies": {
-    "@types/node": "^18.6.4",
+    "@types/node": "^20.17.10",
     "@types/node-fetch": "^2.6.2",
     "@types/tough-cookie": "^4.0.2",
     "@typescript-eslint/eslint-plugin": "^5.43.0",
