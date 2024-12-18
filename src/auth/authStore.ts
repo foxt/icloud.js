@@ -11,7 +11,7 @@ export class iCloudAuthenticationStore {
      * The options provided to the iCloudService that owns this AuthenticationStore
      */
     options: iCloudService["options"];
-    log: iCloudService["log"];
+    _log: iCloudService["_log"];
     /**
      * The exact file path to the base file name of the trust token file.
      * @default "~/.icloud/.trust-token"
@@ -29,7 +29,9 @@ export class iCloudAuthenticationStore {
 
     constructor(service: iCloudService) {
         this.options = service.options;
+        this._log = service._log;
         this.tknFile = path.format({ dir: this.options.dataDirectory, base: ".trust-token" });
+
 
         Object.defineProperty(this, "trustToken", { enumerable: false });
         Object.defineProperty(this, "sessionId", { enumerable: false });
@@ -47,7 +49,7 @@ export class iCloudAuthenticationStore {
         try {
             this.trustToken = fs.readFileSync(this.tknFile + "-" + Buffer.from(account.toLowerCase()).toString("base64"), "utf8");
         } catch (e) {
-            this.log(LogLevel.Error, "Unable to load trust token:", e.toString());
+            this._log(LogLevel.Error, "Unable to load trust token:", e.toString());
         }
     }
     /**
@@ -59,7 +61,7 @@ export class iCloudAuthenticationStore {
             if (!fs.existsSync(this.options.dataDirectory)) fs.mkdirSync(this.options.dataDirectory);
             require("fs").writeFileSync(this.tknFile + "-" + Buffer.from(account.toLowerCase()).toString("base64"), this.trustToken);
         } catch (e) {
-            this.log(LogLevel.Warning, "Unable to write trust token:", e.toString());
+            this._log(LogLevel.Warning, "Unable to write trust token:", e.toString());
         }
     }
 
@@ -81,7 +83,7 @@ export class iCloudAuthenticationStore {
             this.aasp = aaspCookie.split("aasp=")[1].split(";")[0];
             return this.validateAuthSecrets();
         } catch (e) {
-            this.log(LogLevel.Warning, "Unable to process auth secrets:", e.toString());
+            this._log(LogLevel.Warning, "Unable to process auth secrets:", e.toString());
             return false;
         }
     }
