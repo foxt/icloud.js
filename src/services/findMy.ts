@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
 import iCloudService from "..";
+import { LogLevel } from "../index.js";
 
 interface iCloudFindMyDeviceInfo {
     msg?: {
@@ -212,8 +213,10 @@ export class iCloudFindMyService {
     service: iCloudService;
     serviceUri: string;
     includeFamily = true;
+    _log: iCloudService["_log"];
     constructor(service: iCloudService, serviceUri: string) {
         this.service = service;
+        this._log = service._log;
         this.serviceUri = serviceUri;
         this.refresh();
     }
@@ -234,7 +237,18 @@ export class iCloudFindMyService {
                 })
             }
         );
-        const json = await request.json();
+        let json;
+        const responseBody = await request.text();
+        try {
+            json = JSON.parse(responseBody);
+        } catch (error) {
+            if (request.status == 450) {
+                this._log(LogLevel.Error, "Authentication timed out, re-authentication required.");
+                throw new Error("Reauthentication required.");
+            }
+            this._log(LogLevel.Error, "Failed to parse Find My service response:", error, request.status, "Response body:\n", responseBody);
+            throw error;
+        }
         const newDevices = new Map();
         for (const device of json.content)
             newDevices.set(device.id, (this.devices.get(device.id) || new iCloudFindMyDevice(this)).apply(device));
