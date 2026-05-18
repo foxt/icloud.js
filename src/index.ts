@@ -12,6 +12,7 @@ import { iCloudDriveService } from "./services/drive";
 import { iCloudFindMyService } from "./services/findMy";
 import { iCloudPhotosService } from "./services/photos";
 import { iCloudUbiquityService } from "./services/ubiquity";
+import { iCloudContactsService } from "./services/contacts";
 import { AccountInfo } from "./types";
 
 export type { iCloudAuthenticationStore } from "./auth/authStore";
@@ -476,7 +477,8 @@ export default class iCloudService extends EventEmitter {
         ubiquity: iCloudUbiquityService,
         drivews: iCloudDriveService,
         calendar: iCloudCalendarService,
-        photos: iCloudPhotosService
+        photos: iCloudPhotosService,
+        contacts: iCloudContactsService
     };
 
     // Returns an instance of the 'account' (Account Details) service.
@@ -494,6 +496,8 @@ export default class iCloudService extends EventEmitter {
     getService(service: "calendar"): iCloudCalendarService
     // Returns an instance of the 'photos' (iCloud Photos) service.
     getService(service: "photos"): iCloudPhotosService
+    // Returns an instance of the 'contacts' (iCloud Contacts) service.
+    getService(service: "contacts"): iCloudContactsService
     /**
      * Returns an instance of the specified service. Results are cached, so subsequent calls will return the same instance.
      * @param service The service name to return an instance of. Must be one of the keys in {@link iCloudService.serviceConstructors}.
