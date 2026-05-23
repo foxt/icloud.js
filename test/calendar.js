@@ -1,6 +1,6 @@
 const authenticate = require("./authenticate");
 
-authenticate.then(async(icloud) => {
+authenticate().then(async(icloud) => {
     const calendarService = icloud.getService("calendar");
     const calendars = await calendarService.calendars();
     const events = await calendarService.events();

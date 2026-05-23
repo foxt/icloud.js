@@ -1,6 +1,6 @@
 const authenticate = require("./authenticate");
 
-authenticate.then(async(icloud) => {
+authenticate().then(async(icloud) => {
     const storageUsage = await icloud.getStorageUsage();
     for (let mediaType of storageUsage.storageUsageByMedia) {
         console.log(mediaType.displayLabel + ": " + Math.floor(mediaType.usageInBytes / 1000 / 1000).toLocaleString() + "mb usage ");

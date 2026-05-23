@@ -69,6 +69,12 @@ export interface iCloudServiceSetupOptions {
      * @default LogLevel.Debug
      */
     logger?: keyof typeof LogLevel | ((level: (typeof LogLevel)[keyof typeof LogLevel], ...args: any[]) => void);
+
+    /**
+     * Pause multifactor authentication. If true will not automatically request 2fa approval from trusted devices.
+     * Session will have limited access to account data and services (e.g. Find My).
+     */
+    pause2FA?: boolean;
 }
 /**
  * The state of the iCloudService.
@@ -273,7 +279,8 @@ export default class iCloudService extends EventEmitter {
             let authData = {
                 accountName: this.options.username,
                 trustTokens: this.authStore.trustToken ? [this.authStore.trustToken] : [],
-                rememberMe: this.options.saveCredentials
+                rememberMe: this.options.saveCredentials,
+                ...(this.options.pause2FA ? { pause2FA: true } : {})
             } as any;
             if (this.options.authMethod === "srp") {
                 const authenticator = new GSASRPAuthenticator(username);
@@ -299,10 +306,14 @@ export default class iCloudService extends EventEmitter {
                     throw new Error("Unable to process auth response!");
                 }
             } else if (authResponse.status == 409) {
-                if (this.authStore.processAuthSecrets(authResponse))
-                    this._setState(iCloudServiceStatus.MfaRequested);
-                else
-                    throw new Error("Unable to process auth response!");
+                JSON.parse(await authResponse.text());
+                if (this.authStore.processAuthSecrets(authResponse)) {
+                    // If pause2FA in response is true then we can proceed without 2FA
+                    if (authData.pause2FA == true) {
+                        this._setState(iCloudServiceStatus.Trusted);
+                        await this._getiCloudCookies();
+                    } else { this._setState(iCloudServiceStatus.MfaRequested); }
+                } else { throw new Error("Unable to process auth response!"); }
             } else {
                 if (authResponse.status == 401)
                     throw new Error("Recieved 401 error. Incorrect password? (" + authResponse.status + ", " + await authResponse.text() + ")");

@@ -1,6 +1,6 @@
 const authenticate = require("./authenticate");
 
-authenticate.then(async(icloud) => {
+authenticate({ pause2FA: true }).then(async(icloud) => {
     const findMyService = icloud.getService("findme");
     await findMyService.refresh();
     for (let device of findMyService.devices.values()) {

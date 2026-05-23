@@ -2,7 +2,7 @@ const authenticate = require("./authenticate");
 const path = require("path");
 const { writeFile } = require("fs/promises");
 
-authenticate.then(async(icloud) => {
+authenticate().then(async(icloud) => {
     const photosService = icloud.getService("photos");
     const albums = await photosService.getAlbums();
     console.log("All your album names: ", Array.from(albums.keys()).join(", "));
