@@ -2,8 +2,8 @@ const iCloud = require("../build/index.js").default;
 const input = require("input");
 
 module.exports = (async() => {
-    const username = process.env.VSCODE_INSPECTOR_OPTIONS ? "" : await input.text("Username");
-    const password = username ? await input.password("Password") : null;
+    const username = process.env.ICLOUD_USERNAME ?? (process.env.VSCODE_INSPECTOR_OPTIONS ? "" : await input.text("Username"));
+    const password = process.env.ICLOUD_PASSWORD ?? (username ? await input.password("Password") : null);
     const icloud = new iCloud({
         username: username ? username : undefined,
         password: password ? password : undefined,

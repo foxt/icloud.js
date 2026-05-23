@@ -186,6 +186,10 @@ export type AccountInfo = {
         url: string
         status: string
       }
+      sharedstreams: {
+        url: string
+        status: string
+      }
     }
     pcsEnabled: boolean
     configBag: {
